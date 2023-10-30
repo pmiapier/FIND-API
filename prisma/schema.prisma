@@ -1,0 +1,170 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int           @id @map("id")
+  email         String        @unique
+  password      String
+  first_name    String
+  last_name     String
+  phone_number  Int           @unique
+  profile_img   String?
+  birth_date    DateTime?
+  point         Int?          @default(0)
+  isVerified    Boolean       @default(false)
+  isAdmin       Boolean       @default(false)
+  created_at    DateTime      @default(now())
+  updated_at    DateTime      @default(now())
+  last_login_at DateTime      @default(now())
+  locations     Location[]
+  items         Item[]
+  ownerRents    Rent[]        @relation("ownerRents")
+  renterRents   Rent[]        @relation("renterRents")
+  reports       Report[]
+  wallet        wallet[]
+  ChatRoomA     ChatRoom[]    @relation("userA")
+  ChatRoomB     ChatRoom[]    @relation("userB")
+  ChatMessage   ChatMessage[]
+}
+
+model wallet {
+  id           Int           @id @map("id")
+  user_id      Int
+  amount       Decimal
+  updated_at   DateTime      @default(now())
+  user         User          @relation(fields: [user_id], references: [id])
+  transactions transaction[]
+}
+
+model transaction {
+  id        Int     @id @map("id")
+  wallet_id Int
+  rent_id   Int
+  amount    Decimal
+  wallet    wallet  @relation(fields: [wallet_id], references: [id])
+  rent      Rent    @relation(fields: [rent_id], references: [id])
+}
+
+model Location {
+  id       Int     @id @map("id")
+  user_id  Int
+  location String
+  detail   String?
+  user     User    @relation(fields: [user_id], references: [id])
+}
+
+model Item {
+  id            Int         @id @map("id")
+  owner_id      Int
+  categories_id Int
+  title         String
+  description   String
+  status        item_status
+  price         Decimal
+  created_at    DateTime    @default(now())
+  updated_at    DateTime    @default(now())
+  owner         User        @relation(fields: [owner_id], references: [id])
+  categories    categories  @relation(fields: [categories_id], references: [id])
+  images        ItemImage[]
+  rents         Rent[]
+}
+
+model categories {
+  id    Int    @id @map("id")
+  name  String
+  items Item[]
+}
+
+model ItemImage {
+  id        Int    @id @map("id")
+  item_id   Int
+  image_url String
+  position  Int
+  item      Item   @relation(fields: [item_id], references: [id])
+}
+
+model ChatRoom {
+  id           Int           @id @map("id")
+  userA_id     Int
+  userB_id     Int
+  userA_seen   DateTime
+  userB_seen   DateTime
+  userA        User          @relation("userA", fields: [userA_id], references: [id])
+  userB        User          @relation("userB", fields: [userB_id], references: [id])
+  chatMessages ChatMessage[]
+}
+
+model ChatMessage {
+  id          Int          @id @map("id")
+  chatroom_id Int
+  sender_id   Int
+  message     String
+  type        message_type
+  date        DateTime
+  chatroom    ChatRoom     @relation(fields: [chatroom_id], references: [id])
+  sender      User         @relation(fields: [sender_id], references: [id])
+}
+
+model Rent {
+  id              Int           @id @map("id")
+  owner_id        Int
+  rentee_id       Int
+  item_id         Int
+  created_at      DateTime      @default(now())
+  start_rent_date DateTime
+  end_rent_date   DateTime
+  status          order_status
+  amount          Decimal
+  deposit         Decimal
+  owner           User          @relation("ownerRents", fields: [owner_id], references: [id])
+  rentee          User          @relation("renterRents", fields: [rentee_id], references: [id])
+  item            Item          @relation(fields: [item_id], references: [id])
+  reports         Report[]
+  transactions    transaction[]
+}
+
+model Report {
+  id           Int         @id @map("id")
+  user_id      Int
+  rent_id      Int
+  detail       String?
+  user         User        @relation(fields: [user_id], references: [id])
+  rent         Rent        @relation(fields: [rent_id], references: [id])
+  reportImages ReportImg[]
+}
+
+model ReportImg {
+  id              Int    @id @map("id")
+  damaged_item_id Int
+  img             String
+  damagedItem     Report @relation(fields: [damaged_item_id], references: [id])
+}
+
+enum item_status {
+  stock
+  available
+  reserve
+  renting
+}
+
+enum order_status {
+  inprocess
+  renting
+  completed
+  dispute
+}
+
+enum message_type {
+  message
+  video
+  image
+}
