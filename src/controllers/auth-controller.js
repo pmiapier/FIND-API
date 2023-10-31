@@ -1,10 +1,62 @@
 const prisma = require(`../models/prisma`)
+const { registerSchema,loginSchema } = require(`../validators/auth-validator`)
+const createError  = require(`../utils/create-error`)
+const bcrypt = require(`bcryptjs`)
+const jwt = require(`jsonwebtoken`)
+require(`dotenv`).config()
+const {JWT_SECRET_KEY,EXP_KEY} = process.env
 
 
+const register = async (req,res,next)=>{
+    try {
+        const {value,error} = registerSchema.validate(req.body)
+        if(error) return next(createError(error,400))
+        const check = await prisma.user.findFirst({
+            where:{email:value.email}
+        })
+
+        if(check) return next(createError(`duplicate`,401))
+
+        
+        value.password = await bcrypt.hash(value.password,12)
+        const user = await prisma.user.create({
+            data:value
+        })
+        
+        delete user.password
+        const payload = {userId:user.id}
+        const TOKEN = jwt.sign(payload,JWT_SECRET_KEY,{expiresIn:EXP_KEY})
+        res.status(200).json({TOKEN,user})
+
+    } catch (error) {
+        next(error)
+    }
+}
+
+const login = async (req,res,next)=>{
+    try {
+        const {value,error} = loginSchema.validate(req.body)
+        if(error) return next(error)
+        const user = await prisma.User.findFirst({
+            where:{email:value.email}
+        })
+        if(!user) return next(createError(`user not found`,401))
+        const compare = await bcrypt.compare(value.password,user.password)
+        if(!compare) return next(createError(`wrong password`,401))
+
+        delete user.password
+        const payload = {userId:user.id}
+        const TOKEN = jwt.sign(payload,JWT_SECRET_KEY,{expiresIn:EXP_KEY})
+
+        res.status(200).json({TOKEN,user})
+    } catch (error) {
+        next(error) 
+    }
+}
+
+const me = async (req,res,next)=>{
+    res.status(200).json({ user: req.user })
+}
 
 
-
-
-
-
-module.exports ={}
+module.exports ={register,login,me}
