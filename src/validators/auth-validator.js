@@ -12,18 +12,14 @@ const registerSchema = Joi.object({
     .pattern(/^[a-zA-Z0-9]{6,30}$/)
     .trim()
     .required(),
-  confirmPassword: Joi.string()
-    .valid(Joi.ref('password'))
-    .trim()
-    .required()
-    .strip(),
+  confirmPassword: Joi.string().valid(Joi.ref('password')).trim().required().strip()
 });
 
 const loginSchema = Joi.object({
   email: Joi.string().email().trim().required(),
   password: Joi.string()
     .pattern(/^[a-zA-Z0-9]{6,30}$/)
-    .required(),
+    .required()
 });
 
 module.exports = { registerSchema, loginSchema };
