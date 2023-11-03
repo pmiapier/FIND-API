@@ -9,12 +9,15 @@ const createError = require("../utils/create-error")
 
 const postItem = async (req,res,next)=>{
     try {
-        const {title,categories,description,price} = JSON.parse(req.body.json)
+        const {itemName,itemCategory,itemDescription,itemPrice} = req.body
         if(req.files){
-            const categoriesId = await prisma.categories.findFirst({where:{name:categories}})
+            const categoriesId = await prisma.categories.findFirst({where:{name:itemCategory}})
 
             const itemx = await prisma.item.create({
-                data:{title,description,price,
+                data:{
+                    title:itemName,
+                    description:itemDescription,
+                    price:itemPrice,
                     categoriesId:categoriesId.id,
                     ownerId:req.user.id,
                 },
@@ -36,7 +39,7 @@ const postItem = async (req,res,next)=>{
                     console.log(error);
                 }
             })
-            res.status(200).json(JSON.parse(req.body.json))
+            res.status(200).json({nsg:`post done`})
         }
     } catch (error) {
         next(error)
