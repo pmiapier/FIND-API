@@ -15,8 +15,11 @@ module.exports = async (req, res, next) => {
             where: {id: payload.userId,},
         });
 
-        if (!user) return next(createError("unauthenticated", 401));
-        
+        if (!user) {
+            console.log('unauthenticated')
+            return next(createError("unauthenticated", 401));
+        }
+
         delete user.password;
 
         req.user = user;
@@ -28,6 +31,7 @@ module.exports = async (req, res, next) => {
         ) {
             err.statusCode = 401;
         }
+        console.log(err)
         next(err);
     }
 };

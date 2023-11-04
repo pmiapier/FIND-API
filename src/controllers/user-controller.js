@@ -39,9 +39,10 @@ const postItem = async (req,res,next)=>{
                     console.log(error);
                 }
             })
-            res.status(200).json({nsg:`post done`})
+            res.status(200).json({msg:`post done`})
         }
     } catch (error) {
+        console.log(error)
         next(error)
     } 
 }
