@@ -35,7 +35,7 @@ model User {
 }
 
 model Wallet {
-  id           Int           @id @default(autoincrement()) @map("id")
+  id           Int         @id @default(autoincrement()) @map("id")
   userId       Int
   amount       Decimal
   updatedAt    DateTime      @default(now())

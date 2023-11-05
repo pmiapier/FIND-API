@@ -27,6 +27,15 @@ const register = async (req,res,next)=>{
         const user = await prisma.user.create({
             data:value
         })
+        const userId = user.id
+        console.log("🚀 ~ file: auth-controller.js:26 ~ register ~ userId:", userId)
+        const createWallet = await prisma.wallet.create({
+            data: {
+                userId: userId,
+                amount: 0
+            }
+        })
+        console.log("🚀 ~ file: auth-controller.js:31 ~ register ~ createWallet:", createWallet)
         
         delete user.password
         const payload = {userId:user.id}
