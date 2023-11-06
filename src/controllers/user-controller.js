@@ -1,24 +1,47 @@
-const prisma = require(`../models/prisma`);
-const bcrypt = require(`bcryptjs`);
 
-const cloundinary = require(`../config/cloudinary`);
-const fs = require(`fs`);
-const { updateUserSchema } = require('../validators/user-validator');
-const createError = require('../utils/create-error');
+const prisma = require(`../models/prisma`)
+const bcrypt = require(`bcryptjs`)
 
-const postItem = async (req, res, next) => {
-  try {
-    const { itemName, itemCategory, itemDescription, itemPrice } = req.body;
-    if (req.files) {
-      const categoriesId = await prisma.categories.findFirst({ where: { name: itemCategory } });
+const cloundinary = require(`../config/cloudinary`)
+const fs = require(`fs`)
+const { updateUserSchema } = require("../validators/user-validator")
+const createError = require("../utils/create-error")
 
-      const itemx = await prisma.item.create({
-        data: {
-          title: itemName,
-          description: itemDescription,
-          price: itemPrice,
-          categoriesId: categoriesId.id,
-          ownerId: req.user.id
+
+const postItem = async (req,res,next)=>{
+    try {
+        const {itemName,itemCategory,itemDescription,itemPrice} = req.body
+        if(req.files){
+            const categoriesId = await prisma.categories.findFirst({where:{name:itemCategory}})
+
+            const itemx = await prisma.item.create({
+                data:{
+                    title:itemName,
+                    description:itemDescription,
+                    price:itemPrice,
+                    categoriesId:categoriesId.id,
+                    ownerId:req.user.id,
+                },
+            })
+            await req.files.map(async(item,index)=>{
+                try {
+                    const a = await cloundinary.uploader.upload(item.path)
+                    fs.unlink(item.path,err=>{
+                        if(err) next(err)
+                    })
+                    await prisma.itemImage.create({
+                        data:{
+                            position:index+1,
+                            imageUrl:a.secure_url,
+                            itemId:itemx.id
+                        }
+                    })
+                } catch (error) {
+                    console.log(error);
+                }
+            })
+            res.status(200).json({message:`post done`})
+
         }
       });
       await req.files.map(async (item, index) => {
