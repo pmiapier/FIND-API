@@ -40,6 +40,3 @@ app.use(serverError);
 app.listen(8000, () => {
   console.log(`Server is alive on http://localhost:${PORT}`);
 });
-
-const createCategoriesList = require(`./sql/createCategories`);
-// createCategoriesList()
