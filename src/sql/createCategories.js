@@ -12,5 +12,7 @@ const createCategoriesList = async ()=>{
     })
 }
 
+createCategoriesList()
 
-module.exports = createCategoriesList
+
+// module.exports = createCategoriesList
