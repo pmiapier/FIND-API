@@ -11,11 +11,16 @@ const register = async (req,res,next)=>{
     try {
         const {value,error} = registerSchema.validate(req.body)
         if(error) return next(createError(error,400))
+
         const check = await prisma.user.findFirst({
             where:{email:value.email}
         })
+        if(check) return next(createError(`duplicateEmail`,401))
 
-        if(check) return next(createError(`duplicate`,401))
+        const checkPhone = await prisma.user.findFirst({
+            where:{phoneNumber:value.phoneNumber}
+        })
+        if(checkPhone) return next(createError(`duplicatePhone`))
 
         
         value.password = await bcrypt.hash(value.password,12)
@@ -26,7 +31,7 @@ const register = async (req,res,next)=>{
         delete user.password
         const payload = {userId:user.id}
         const TOKEN = jwt.sign(payload,JWT_SECRET_KEY,{expiresIn:EXP_KEY})
-        res.status(200).json({TOKEN,user})
+        res.status(200).json({message:`done`,TOKEN,user})
 
     } catch (error) {
         next(error)
@@ -48,7 +53,8 @@ const login = async (req,res,next)=>{
         const payload = {userId:user.id}
         const TOKEN = jwt.sign(payload,JWT_SECRET_KEY,{expiresIn:EXP_KEY})
 
-        res.status(200).json({TOKEN,user})
+        res.status(200).json({message:`done`,TOKEN,user})
+        // res.status(200).json({TOKEN,user})
     } catch (error) {
         next(error) 
     }

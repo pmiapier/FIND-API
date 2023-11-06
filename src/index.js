@@ -37,7 +37,7 @@ app.use(`/rent`, rentRote);
 app.use(notFound);
 app.use(serverError);
 
-app.listen(PORT, () => {
+app.listen(8000, () => {
   console.log(`Server is alive on http://localhost:${PORT}`);
 });
 
