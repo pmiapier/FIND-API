@@ -117,10 +117,11 @@ async function main() {
 
   for (let userId = 1; userId <= regularUserCount + 1; userId++) {
     for (let i = 1; i <= 5; i++) {
+      const ranCat = faker.random.number({ min: 1, max: 10 });
       await prisma.item.create({
         data: {
           ownerId: userId,
-          categoriesId: 1,
+          categoriesId: ranCat,
           title: `Product ${i} for User ${userId}`,
           description: `Description of Product ${i} for User ${userId}`,
           status: 'available',
