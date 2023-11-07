@@ -37,7 +37,7 @@ const getSingleItem = async (req, res, next) => {
   try {
     const id = +req.body.id; // Assuming the item ID is in the URL as a route parameter
 
-    const data = await prisma.item.findUnique({
+    const data = await prisma.item.findFirst({
       where: { id: +id },
       include: {
         images: true // Include the associated images
@@ -58,5 +58,18 @@ const getSingleItem = async (req, res, next) => {
     next(error);
   }
 };
+const getCategories = async (req,res,next)=>{
+  try {
+    const data = await prisma.categories.findMany({})
+    const categories = []
+    data.map((item,index)=>{
+      categories.push(item.name)
+    })
 
-module.exports = { getAllItem, getSingleItem };
+    res.status(200).json(categories)
+  } catch (error) {
+    next(error)
+  }
+}
+
+module.exports = { getAllItem, getSingleItem,getCategories };
