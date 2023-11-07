@@ -22,9 +22,6 @@ const createCheckoutSession = async (req, res) => {
       success_url: `${domainUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${domainUrl}/cancelled`
     });
-    if (session) {
-      prisma.rent.create;
-    }
 
     res.status(200).json({ sessionId: session.id });
   } catch (error) {
