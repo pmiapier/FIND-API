@@ -1,23 +1,46 @@
 const prisma = require(`../models/prisma`);
 
-const updateWallet = async (req, res, next) => {
+const withdraw = async (req, res, next) => {
   try {
     // const userId = req.user.id
-    const { walletId } = req.body;
-    console.log('🚀 ~ file: wallet-controller.js:9 ~ updateWal ~ userId:', walletId);
+    const {userId} = req.body
+    console.log('🚀 ~ file: wallet-controller.js:9 ~ updateWal ~ userId:', userId);
+    
+    const findAmountOld = await prisma.wallet.findFirst({
+        where: {userId:userId},
+        select:{userId:true,amount:true}
 
-    const findWalletId = await prisma.transaction.findMany({
-      where: { walletId: +walletId },
-      select: { id: true, walletId: true, rentId: true, amount: true },
-      orderBy: { createdAt: 'desc' },
-      take: 2
+    })
+    console.log("🚀 ~ file: wallet-controller.js:11 ~ withdraw ~ findWallet:", findAmountOld)
+
+    const updateAmountMoneyAfterWithdraw = parseFloat(findAmountOld?.amount) - parseFloat(findAmountOld?.amount)
+    const t = await prisma.wallet.update({
+        where: {
+            id: userId // id wrong
+        },
+        data: {
+            amount: updateAmountMoneyAfterWithdraw
+        }
     });
-    console.log('🚀 ~ file: wallet-controller.js:17 ~ updateWal ~ findWalletId:', findWalletId);
-  
-    res.status(200).json('done');
+    console.log("🚀 ~ file: wallet-controller.js:17 ~ withdraw ~ updateAmountMoneyAfterWithdraw:", updateAmountMoneyAfterWithdraw)
+    console.log("🚀 ~ file: wallet-controller.js:17 ~ withdraw ~ update:", t)
+   
+    res.status(200).json("done");
   } catch (error) {
     console.log(error);
   }
 };
 
-module.exports = { updateWallet };
+const getWallet = async (req,res,next) => {
+    const userId = req.user.id
+    console.log('🚀 ~ file: wallet-controller.js:9 ~ updateWal ~ userId:', userId);
+    
+    const amountOfMoney = await prisma.wallet.findFirst({
+        where: {userId:userId}
+    })
+    console.log("🚀 ~ file: wallet-controller.js:11 ~ withdraw ~ findWallet:", amountOfMoney)
+
+    res.status(200).json(amountOfMoney);
+}
+
+module.exports = { withdraw,getWallet };
