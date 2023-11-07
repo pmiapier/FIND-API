@@ -4,10 +4,12 @@ const createError = require('../utils/create-error');
 const createTransaction = async (req, res, next) => {
   try {
     const { itemId } = req.body
-    const userId = req.user.id;
+
       console.log(itemId, "ITEM ID")
     const findStatus = await prisma.rent.findFirst({
-      where: { itemId: itemId },
+      where: {
+        AND: [{itemId: itemId},{status: 'completed'}]
+      },
       select: {
         id: true,
         ownerId: true,
@@ -20,38 +22,58 @@ const createTransaction = async (req, res, next) => {
         
       }
     });
-    console.log("🚀 ~ file: transaction-controller.js:23 ~ createTransaction ~ findStatus:", findStatus)
-    console.log("🚀 ~ file: transaction-controller.js:23 ~ createTransaction ~ findStatus:", findStatus.owner.wallets)
-    console.log("🚀 ~ file: transaction-controller.js:23 ~ createTransaction ~ findStatus:", findStatus.rentee.wallets)
 
-    if (findStatus.status !== 'completed') {
-      next(createError('Not a complete state', 400));
+
+    if (findStatus.status === 'completed') {
+      const dataTransaction = [
+        {
+          walletId: findStatus.owner.wallets[0].id, // index 0
+          rentId: findStatus.id,
+          amount: findStatus.amount
+        },
+        {
+          walletId: findStatus.rentee.wallets[0].id,  // index 1
+          rentId: findStatus.id,
+          amount: findStatus.deposit
+        }
+      ]; 
+  
+      const createDataTransaction = await prisma.transaction.createMany({
+        data: dataTransaction
+      }); // 2 row  
+
+        // walletId 1 and 3
+        dataTransaction?.map(async (data) => {
+            // data row : 2
+
+            // retrun userId = 3 ( All data )
+            const findUserIdByWallet = await prisma.wallet.findFirst({
+              where: {
+                userId: data?.walletId
+              }
+            });
+
+            // ( amount from transaction + amount userId )
+            const updateAmount = parseFloat(data?.amount) + parseFloat(findUserIdByWallet?.amount)
+
+            await prisma.wallet.update({
+              where: {
+                  id: findUserIdByWallet?.id 
+              },
+                data: {
+                    amount: updateAmount
+                }
+            });
+          });
+        
+      
+      res.status(200).json(createDataTransaction);
     }
-    const dataTransaction = [
-      {
-        walletId: findStatus.owner.wallets[0].id,
-        rentId: findStatus.id,
-        amount: findStatus.amount
-      },
-      {
-        walletId: findStatus.rentee.wallets[0].id,
-        rentId: findStatus.id,
-        amount: findStatus.deposit
-      }
-    ];
-    console.log("🚀 ~ file: transaction-controller.js:40 ~ createTransaction ~ dataTransaction:", dataTransaction)
+      
 
-    const createDataTransaction = await prisma.transaction.createMany({
-      data: dataTransaction
-    });
-
-    console.log('🚀 ~ file: transaction-controller.js:45 ~ createTransaction ~ sum:', createDataTransaction);
-
-    
-    // next()
-    res.status(200).json(createDataTransaction);
+ 
   } catch (error) {
-    next(error);
+    next(createError("status is not completed ! ",400));
   }
 };
 module.exports = { createTransaction };
