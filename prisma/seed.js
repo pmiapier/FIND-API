@@ -105,7 +105,7 @@ async function main() {
     ]
   });
 
-  for (let id = 1; id <= regularUserCount; id++) {
+  for (let id = 1; id <= regularUserCount + 1; id++) {
     await prisma.wallet.create({
       data: {
         id,
@@ -115,7 +115,7 @@ async function main() {
     });
   }
 
-  for (let userId = 1; userId <= regularUserCount; userId++) {
+  for (let userId = 1; userId <= regularUserCount + 1; userId++) {
     for (let i = 1; i <= 5; i++) {
       await prisma.item.create({
         data: {
@@ -138,14 +138,14 @@ async function main() {
     }
   }
 
-  for (let userId = 1; userId <= regularUserCount; userId++) {
+  for (let userId = 1; userId <= regularUserCount + 1; userId++) {
     for (let i = 1; i <= 10; i++) {
       const randomRentStatus = faker.random.arrayElement(['inprocess', 'renting', 'completed', 'dispute']);
       const rentAmount = faker.random.number({ min: 50, max: 2000 });
       const depositAmount = faker.random.number({ min: 20, max: 900 });
 
       // Find a random item for this rent
-      const randomItemId = faker.random.number({ min: 1, max: 25 }); // Adjust the range as needed
+      const randomItemId = faker.random.number({ min: 1, max: 30 }); // Adjust the range as needed
 
       // Find the item by its ID
       const item = await prisma.item.findUnique({
