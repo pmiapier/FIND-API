@@ -21,6 +21,7 @@ const postItem = async (req, res, next) => {
           ownerId: req.user.id
         }
       });
+
       await req.files.map(async (item, index) => {
         try {
           const a = await cloundinary.uploader.upload(item.path);
