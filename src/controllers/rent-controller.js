@@ -35,5 +35,45 @@ const createRent = async (req,res,next)=>{
 }
 
 
+const createRental = async (rental) => {
+    try {
+        const rent = await prisma.rent.create({
+            data: {
+                ownerId: rental.ownerId,
+                renteeId: rental.renteeId,
+                itemId: rental.itemId,
+                startRentDate: rental.startRentDate, 
+                endRentDate: rental.endRentDate,
+                status: rental.status,
+                amount: rental.amount,
+                deposit: rental.deposit,
+                stripeSession: rental.stripeSession,
+            }
+        })
+        return true
+    } catch (error) {
+        console.log('Error storing rental', error)
+        return false
+    }
+}
 
-module.exports ={createRent}
+const verifyPayment = async (req, res, next) => {
+    const {sessionId, success} = req.body
+    if(sessionId && success === true) {
+        try {
+            const updatePayment = await prisma.rent.update({
+                where: { stripeSession: sessionId, status: "awaiting_payment", renteeId: req.user.id},
+                data: {
+                    status: "inprocess",
+                }
+            })
+         } catch (error) {
+            next(error)
+         }
+    } else {
+        res.status(500)
+    }
+}
+
+
+module.exports ={createRent, createRental, verifyPayment}

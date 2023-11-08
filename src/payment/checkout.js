@@ -1,12 +1,13 @@
 const stripeAPI = require('./stripe');
+const { createRental } = require("../controllers/rent-controller")
 
 // สร้าง session สำหรับการเช่า เมื่อ user กด rent now
 const createCheckoutSession = async (req, res) => {
   const domainUrl = process.env.FIND_WEB_APP_URL;
   console.log(' ##### req.body#####', req.body);
-  const { line_items, customer_email } = req.body;
+  const { line_items, customer_email, rental } = req.body;
   // เช็คว่ามี line_items และ customer email จาก req body ไหม
-  if (!line_items || !customer_email) {
+  if (!line_items || !customer_email || !rental) {
     return res.status(400).json({ error: 'missing required session parameters' });
   }
 
@@ -22,6 +23,13 @@ const createCheckoutSession = async (req, res) => {
       success_url: `${domainUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${domainUrl}/cancelled`
     });
+
+    rental.stripeSession = session.id;
+
+    const rent = createRental(rental)
+    if (!rent){
+      console.log('Error storing rental')
+    }
 
     res.status(200).json({ sessionId: session.id });
   } catch (error) {

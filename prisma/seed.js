@@ -156,6 +156,7 @@ async function main() {
       if (item) {
         const randomRenteeId = faker.random.number({ min: 1, max: 6 });
         const randomOwnerId = faker.random.number({ min: 1, max: 6 });
+        const randomStripeSession = (Math.random() + 1).toString(36).substring(7);
         const rent = await prisma.rent.create({
           data: {
             ownerId: randomOwnerId,
@@ -165,7 +166,8 @@ async function main() {
             endRentDate: new Date(),
             status: randomRentStatus,
             amount: rentAmount,
-            deposit: depositAmount
+            deposit: depositAmount,
+            stripeSession: randomStripeSession,
           }
         });
 
