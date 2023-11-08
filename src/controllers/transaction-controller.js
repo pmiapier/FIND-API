@@ -2,6 +2,7 @@ const prisma = require(`../models/prisma`);
 const createError = require('../utils/create-error');
 const constantStatus = require('../utils/constant/status')
 const constantFee = require('../utils/constant/fee')
+const constantPoint = require('../utils/constant/point')
 
 const createTransaction = async (req, res, next) => {
   try {
@@ -65,31 +66,73 @@ const createTransaction = async (req, res, next) => {
             const findUserIdByWallet = await prisma.wallet.findFirst({
               where: {
                 userId: data?.walletId
+              },
+              include:{
+                user:{
+                  select: {point:true}
+                },
+                
               }
             });
+            console.log("🚀 ~ file: transaction-controller.js:70 ~ dataTransaction?.map ~ findUserIdByWallet:", findUserIdByWallet)
 
             // ( amount from transaction + amount userId )
             const updateAmount = parseFloat(data?.amount) + parseFloat(findUserIdByWallet?.amount)
-            console.log("🚀 ~ file: transaction-controller.js:73 ~ dataTransaction?.map ~ updateAmount:", updateAmount)
-
+  
             await prisma.wallet.update({
               where: {
                   id: findUserIdByWallet?.id 
               },
                 data: {
-                    amount: updateAmount
+                    amount: updateAmount,
                 }
             });
+            
+            const updatePoint = parseInt(constantPoint.POINT) + parseInt(findUserIdByWallet.user.point)
+
+            await prisma.user.update({
+              where: {
+                  id: findUserIdByWallet?.userId 
+              },
+                data: {
+                    point: updatePoint,
+                }
+            });
+          
           });
-        
-      
+          
       res.status(200).json(createDataTransaction);
     }
-      
 
- 
   } catch (error) {
     next(createError("status is not completed ! ",400));
   }
 };
-module.exports = { createTransaction };
+
+const getTransaction = async(req,res,next) => {
+  try {
+    const userId = req.user
+    console.log("🚀 ~ file: transaction-controller.js:99 ~ getTransaction ~ userId:", userId)
+    const orderTransaction = await prisma.rent.findFirst({
+      select: {
+        id: true,
+        ownerId: true,
+        renteeId: true,
+        status: true,
+        amount: true,
+        deposit: true,
+        owner: { select: { wallets: true } },
+        rentee: { select: { wallets: true } },
+
+      }
+    });
+    console.log("🚀 ~ file: transaction-controller.js:112 ~ getTransaction ~ findStatus:", orderTransaction)
+    console.log("🚀 ~ file: transaction-controller.js:112 ~ getTransaction ~ findStatus:", orderTransaction.owner.wallets)
+    console.log("🚀 ~ file: transaction-controller.js:112 ~ getTransaction ~ findStatus:", orderTransaction.rentee.wallets)
+    res.status(200).json("get show order success")
+  } catch (error) {
+    next(error)
+  }
+} 
+
+module.exports = { createTransaction,getTransaction };

@@ -14,7 +14,7 @@ const withdraw = async (req, res, next) => {
     const updateAmountMoneyAfterWithdraw = parseFloat(findAmountOld?.amount) - parseFloat(findAmountOld?.amount)
     await prisma.wallet.update({
         where: {
-            id: +findAmountOld.id // id wrong
+            id: +findAmountOld.id 
         },
         data: {
             amount: updateAmountMoneyAfterWithdraw
