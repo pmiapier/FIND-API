@@ -90,7 +90,7 @@ const updateItem = async (req, res, next) => {
 };
 
 const getMyProduct = async (req, res, next) => {
-  const { userId } = req.body;
+  const { userId } = req.query;
   try {
     const data = await prisma.item.findMany({
       where: {
