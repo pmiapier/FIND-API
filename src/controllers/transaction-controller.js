@@ -1,14 +1,22 @@
 const prisma = require(`../models/prisma`);
 const createError = require('../utils/create-error');
+const constantStatus = require('../utils/constant/status')
+const constantFee = require('../utils/constant/fee')
 
 const createTransaction = async (req, res, next) => {
   try {
     const { itemId } = req.body
 
       console.log(itemId, "ITEM ID")
+    // const findAdmin = await prisma.user.findFirst({
+    //   where: {isAdmin:"1"}
+    // })
+    // console.log("🚀 ~ file: transaction-controller.js:12 ~ createTransaction ~ findAdmin:", findAdmin)
+
+
     const findStatus = await prisma.rent.findFirst({
       where: {
-        AND: [{itemId: itemId},{status: 'completed'}]
+        AND: [{itemId: itemId},{status: constantStatus.completed}]
       },
       select: {
         id: true,
@@ -24,23 +32,30 @@ const createTransaction = async (req, res, next) => {
     });
 
 
-    if (findStatus.status === 'completed') {
+    if (findStatus.status === constantStatus.completed) {
+      const Fee = constantFee.FEE 
+      const serviceCharge = (parseFloat(findStatus.amount) * parseFloat(Fee))
       const dataTransaction = [
         {
           walletId: findStatus.owner.wallets[0].id, // index 0
           rentId: findStatus.id,
-          amount: findStatus.amount
+          amount: findStatus.amount - serviceCharge
         },
         {
           walletId: findStatus.rentee.wallets[0].id,  // index 1
           rentId: findStatus.id,
           amount: findStatus.deposit
+        },
+        {
+          walletId: 1,
+          rentId: findStatus.id,
+          amount: serviceCharge
         }
       ]; 
   
       const createDataTransaction = await prisma.transaction.createMany({
         data: dataTransaction
-      }); // 2 row  
+      }); // 1-2-3 row  
 
         // walletId 1 and 3
         dataTransaction?.map(async (data) => {
@@ -55,6 +70,7 @@ const createTransaction = async (req, res, next) => {
 
             // ( amount from transaction + amount userId )
             const updateAmount = parseFloat(data?.amount) + parseFloat(findUserIdByWallet?.amount)
+            console.log("🚀 ~ file: transaction-controller.js:73 ~ dataTransaction?.map ~ updateAmount:", updateAmount)
 
             await prisma.wallet.update({
               where: {
