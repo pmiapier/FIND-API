@@ -58,6 +58,8 @@ const getSingleItem = async (req, res, next) => {
     next(error);
   }
 };
+
+
 const getCategories = async (req,res,next)=>{
   try {
     const data = await prisma.categories.findMany({})
@@ -72,4 +74,73 @@ const getCategories = async (req,res,next)=>{
   }
 }
 
-module.exports = { getAllItem, getSingleItem,getCategories };
+
+const myRentalItem = async(req,res,next)=>{
+  try {
+    const rent = await prisma.rent.findMany({
+      where:{
+        ownerId:req.user.id
+      },
+      include:{
+        item:{
+          select:{
+            id:true,
+            title:true,
+            description:true,
+            status:true,
+            price:true,
+            images:true
+          }
+        },
+        owner:{
+          select:{
+            id:true,
+            firstName:true,
+            lastName:true
+          }
+        }
+      }
+    })
+    res.status(200).json(rent)
+    // res.status(200).send(1234)
+  } catch (error) {
+    next(error)
+  }
+}
+
+const myRentedItem = async(req,res,next)=>{
+  try {
+    const data = await prisma.rent.findMany({
+      where:{
+        renteeId:req.user.id
+      },
+      include:{
+        item:{
+          select:{
+            id:true,
+            title:true,
+            description:true,
+            status:true,
+            price:true,
+            images:true
+          }
+        },
+        owner:{
+          select:{
+            id:true,
+            firstName:true,
+            lastName:true
+          }
+        }
+      }
+    })
+
+    res.status(200).json(data)
+  } catch (error) {
+    next(error)
+  }
+}
+
+
+
+module.exports = { getAllItem, getSingleItem,getCategories,myRentalItem,myRentedItem };

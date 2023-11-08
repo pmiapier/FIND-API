@@ -126,6 +126,7 @@ model Rent {
   status        order_status  @default(inprocess)
   amount        Decimal
   deposit       Decimal
+  stripeSession String        @unique
   owner         User          @relation("ownerRents", fields: [ownerId], references: [id])
   rentee        User          @relation("renterRents", fields: [renteeId], references: [id])
   item          Item          @relation(fields: [itemId], references: [id])
@@ -158,6 +159,7 @@ enum item_status {
 }
 
 enum order_status {
+  awaiting_payment
   inprocess
   renting
   completed
