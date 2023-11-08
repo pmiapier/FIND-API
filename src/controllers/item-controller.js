@@ -59,88 +59,84 @@ const getSingleItem = async (req, res, next) => {
   }
 };
 
-
-const getCategories = async (req,res,next)=>{
+const getCategories = async (req, res, next) => {
   try {
-    const data = await prisma.categories.findMany({})
-    const categories = []
-    data.map((item,index)=>{
-      categories.push(item.name)
-    })
+    const data = await prisma.categories.findMany({});
+    const categories = [];
+    data.map((item, index) => {
+      categories.push(item.name);
+    });
 
-    res.status(200).json(categories)
+    res.status(200).json(categories);
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
-
-const myRentalItem = async(req,res,next)=>{
+const myRentalItem = async (req, res, next) => {
   try {
     const rent = await prisma.rent.findMany({
-      where:{
-        ownerId:req.user.id
+      where: {
+        ownerId: req.user.id
       },
-      include:{
-        item:{
-          select:{
-            id:true,
-            title:true,
-            description:true,
-            status:true,
-            price:true,
-            images:true
+      include: {
+        item: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            status: true,
+            price: true,
+            images: true
           }
         },
-        owner:{
-          select:{
-            id:true,
-            firstName:true,
-            lastName:true
+        owner: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true
           }
         }
       }
-    })
-    res.status(200).json(rent)
+    });
+    res.status(200).json(rent);
     // res.status(200).send(1234)
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
-const myRentedItem = async(req,res,next)=>{
+const myRentedItem = async (req, res, next) => {
   try {
     const data = await prisma.rent.findMany({
-      where:{
-        renteeId:req.user.id
+      where: {
+        renteeId: req.user.id
       },
-      include:{
-        item:{
-          select:{
-            id:true,
-            title:true,
-            description:true,
-            status:true,
-            price:true,
-            images:true
+      include: {
+        item: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            status: true,
+            price: true,
+            images: true
           }
         },
-        owner:{
-          select:{
-            id:true,
-            firstName:true,
-            lastName:true
+        owner: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true
           }
         }
       }
-    })
+    });
 
-    res.status(200).json(data)
+    res.status(200).json(data);
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
-
-
-module.exports = { getAllItem, getSingleItem,getCategories,myRentalItem,myRentedItem };
+module.exports = { getAllItem, getSingleItem, getCategories, myRentalItem, myRentedItem };
