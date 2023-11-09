@@ -89,6 +89,33 @@ const updateItem = async (req, res, next) => {
   }
 };
 
+const getMyProduct = async (req, res, next) => {
+  const { userId } = req.query;
+  try {
+    const data = await prisma.item.findMany({
+      where: {
+        ownerId: +userId
+      },
+      include: {
+        images: {
+          select: {
+            imageUrl: true,
+            position: true
+          }
+        },
+        categories: {
+          select: {
+            name: true
+          }
+        }
+      }
+    });
+    res.status(200).json(data);
+  } catch (error) {
+    next(error);
+  }
+};
+
 const deleteItem = async (req, res, next) => {
   try {
     const { itemId } = req.body;
@@ -226,4 +253,4 @@ const dashboard = async (req, res, next) => {
   }
 };
 
-module.exports = { postItem, updateItem, deleteItem, renewItem, updateUser, dashboard };
+module.exports = { postItem, updateItem, deleteItem, renewItem, updateUser, dashboard, getMyProduct };

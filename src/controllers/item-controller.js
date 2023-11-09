@@ -35,12 +35,14 @@ const getAllItem = async (req, res, next) => {
 
 const getSingleItem = async (req, res, next) => {
   try {
-    const id = +req.body.id; // Assuming the item ID is in the URL as a route parameter
-
+    // const id = +req.body.id; // Assuming the item ID is in the URL as a route parameter
+    const { id } = req.params;
+    console.log(req);
     const data = await prisma.item.findFirst({
       where: { id: +id },
       include: {
-        images: true // Include the associated images
+        images: true, // Include the associated images
+        categories: true
       }
     });
 
@@ -55,6 +57,8 @@ const getSingleItem = async (req, res, next) => {
     data.user = user.firstName + ' ' + user.lastName.slice(0, 1);
     res.status(200).json(data);
   } catch (error) {
+    res.status(404).json({ message: 'nothing here ..' });
+    console.log(error);
     next(error);
   }
 };
@@ -105,7 +109,6 @@ const myRentalItem = async (req, res, next) => {
   }
 };
 
-
 const myRentedItem = async (req, res, next) => {
   try {
     const data = await prisma.rent.findMany({
@@ -148,10 +151,10 @@ const productListing = async (req, res, next) => {
     let count;
     if (query?.categories) {
       const idx = await prisma.categories.findFirst({
-        where:{
-          name:query?.categories
+        where: {
+          name: query?.categories
         }
-      })
+      });
 
       count = await prisma.item.aggregate({
         _count: {
@@ -159,18 +162,17 @@ const productListing = async (req, res, next) => {
         },
         where: {
           status: 'available',
-          categoriesId:idx.id
+          categoriesId: idx.id
         }
       });
-    }else{
+    } else {
       count = await prisma.item.aggregate({
         _count: {
           id: true
         },
         where: {
           status: 'available'
-        },
-        
+        }
       });
     }
 
