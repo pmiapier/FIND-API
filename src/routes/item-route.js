@@ -1,19 +1,28 @@
-const { getAllItem, getSingleItem,getCategories,myRentalItem,myRentedItem,productListing } = require("../controllers/item-controller")
-const authenticate = require("../middlewares/authenticate")
+const {
+  getAllItem,
+  getSingleItem,
+  getCategories,
+  myRentalItem,
+  myRentedItem,
+  productListing
+} = require('../controllers/item-controller');
+const authenticate = require('../middlewares/authenticate');
 
-const router = require(`express`).Router()
+const router = require(`express`).Router();
 
+router.get(`/`, getAllItem);
+router.get(`/get-single-item/:id`, getSingleItem);
+router.get(`/getCategories`, getCategories);
 
+router.get(`/myRentalItem`, authenticate, myRentalItem);
+router.get(`/myRentedItem`, authenticate, myRentedItem);
 
+router.get(`/`, getAllItem);
+router.post(`/get-single-item`, getSingleItem);
+router.get(`/getCategories`, getCategories);
 
-router.get(`/`,getAllItem)
-router.post(`/get-single-item`,getSingleItem)
-router.get(`/getCategories`,getCategories)
+router.get(`/myRentalItem`, authenticate, myRentalItem);
+router.get(`/myRentedItem`, authenticate, myRentedItem);
+router.get(`/productListing`, productListing);
 
-router.get(`/myRentalItem`,authenticate,myRentalItem)
-router.get(`/myRentedItem`,authenticate,myRentedItem)
-router.get(`/productListing`,productListing)
-
-
-
-module.exports = router
+module.exports = router;
