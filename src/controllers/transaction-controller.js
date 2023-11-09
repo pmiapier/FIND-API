@@ -129,7 +129,7 @@ const getTransaction = async(req,res,next) => {
     console.log("🚀 ~ file: transaction-controller.js:112 ~ getTransaction ~ findStatus:", orderTransaction)
     console.log("🚀 ~ file: transaction-controller.js:112 ~ getTransaction ~ findStatus:", orderTransaction.owner.wallets)
     console.log("🚀 ~ file: transaction-controller.js:112 ~ getTransaction ~ findStatus:", orderTransaction.rentee.wallets)
-    res.status(200).json("get show order success")
+    res.status(200).json("get show order success",orderTransaction)
   } catch (error) {
     next(error)
   }
