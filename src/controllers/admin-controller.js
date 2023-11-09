@@ -1,10 +1,3 @@
-const prisma = require(`../models/prisma`)
+const prisma = require(`../models/prisma`);
 
-
-
-
-
-
-
-
-module.exports ={}
+module.exports = {};
