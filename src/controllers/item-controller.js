@@ -104,7 +104,6 @@ const myRentalItem = async (req, res, next) => {
       }
     });
     res.status(200).json(rent);
-    // res.status(200).send(1234)
   } catch (error) {
     next(error);
   }
@@ -143,4 +142,64 @@ const myRentedItem = async (req, res, next) => {
   }
 };
 
-module.exports = { getAllItem, getSingleItem, getCategories, myRentalItem, myRentedItem };
+const productListing = async (req, res, next) => {
+  try {
+    const query = req.query;
+
+    let page = query.page ? query.page : 1;
+
+    let count;
+    if (query?.categories) {
+      const idx = await prisma.categories.findFirst({
+        where: {
+          name: query?.categories
+        }
+      });
+
+      count = await prisma.item.aggregate({
+        _count: {
+          id: true
+        },
+        where: {
+          status: 'available',
+          categoriesId: idx.id
+        }
+      });
+    } else {
+      count = await prisma.item.aggregate({
+        _count: {
+          id: true
+        },
+        where: {
+          status: 'available'
+        }
+      });
+    }
+
+    const whereCondition = {};
+
+    if (query?.categories) {
+      whereCondition.categories = { name: query?.categories };
+    }
+
+    const item = await prisma.item.findMany({
+      include: {
+        categories: true,
+        images: {
+          select: {
+            imageUrl: true
+          }
+        }
+      },
+      where: whereCondition,
+      take: 15,
+      skip: (page - 1) * 15
+    });
+
+    res.status(200).json({ count, item });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { getAllItem, getSingleItem, getCategories, myRentalItem, myRentedItem, productListing };

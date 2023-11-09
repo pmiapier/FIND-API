@@ -3,7 +3,8 @@ const {
   getSingleItem,
   getCategories,
   myRentalItem,
-  myRentedItem
+  myRentedItem,
+  productListing
 } = require('../controllers/item-controller');
 const authenticate = require('../middlewares/authenticate');
 
@@ -15,5 +16,13 @@ router.get(`/getCategories`, getCategories);
 
 router.get(`/myRentalItem`, authenticate, myRentalItem);
 router.get(`/myRentedItem`, authenticate, myRentedItem);
+
+router.get(`/`, getAllItem);
+router.post(`/get-single-item`, getSingleItem);
+router.get(`/getCategories`, getCategories);
+
+router.get(`/myRentalItem`, authenticate, myRentalItem);
+router.get(`/myRentedItem`, authenticate, myRentedItem);
+router.get(`/productListing`, productListing);
 
 module.exports = router;
