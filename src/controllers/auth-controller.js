@@ -40,7 +40,9 @@ const register = async (req,res,next)=>{
         delete user.password
         const payload = {userId:user.id}
         const TOKEN = jwt.sign(payload,JWT_SECRET_KEY,{expiresIn:EXP_KEY})
+        req.user=user
         res.status(200).json({message:`done`,TOKEN,user})
+        next()
 
     } catch (error) {
         next(error)
@@ -63,7 +65,6 @@ const login = async (req,res,next)=>{
         const TOKEN = jwt.sign(payload,JWT_SECRET_KEY,{expiresIn:EXP_KEY})
 
         res.status(200).json({message:`done`,TOKEN,user})
-        // res.status(200).json({TOKEN,user})
     } catch (error) {
         next(error) 
     }

@@ -16,19 +16,28 @@ const wallet = require(`./routes/wallet-route`);
 const notFound = require(`./middlewares/not-found`);
 const serverError = require(`./middlewares/error`);
 const rateLimitMiddleware = require(`./middlewares/rate-limit`);
+
+
 //# TEE
 const createCheckoutSession = require("./payment/checkout");
 //#####
+const {orderTemplate} = require(`./middlewares/emailNotificationTemplate`)
+
 
 app.use(morgan("dev"));
 app.use(cors());
 app.use(rateLimitMiddleware);
 app.use(express.json());
+app.set(`view engine`,`pug`)
 
 //# TEE
 app.get("/", (req, res) => res.send("Welcome to FIND"));
 app.post("/create-checkout-session", createCheckoutSession);
 //#####
+
+// test
+app.get(`/test`,orderTemplate)
+// test
 
 app.use(`/auth`, authRoute);
 app.use(`/item`, itemRoute);

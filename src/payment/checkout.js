@@ -2,7 +2,7 @@ const stripeAPI = require('./stripe');
 const { createRental } = require("../controllers/rent-controller")
 
 // สร้าง session สำหรับการเช่า เมื่อ user กด rent now
-const createCheckoutSession = async (req, res) => {
+const createCheckoutSession = async (req, res,next) => {
   const domainUrl = process.env.FIND_WEB_APP_URL;
   console.log(' ##### req.body#####', req.body);
   const { line_items, customer_email, rental } = req.body;
@@ -30,8 +30,10 @@ const createCheckoutSession = async (req, res) => {
     if (!rent){
       console.log('Error storing rental')
     }
+    req.session = session.id
 
     res.status(200).json({ sessionId: session.id });
+  
   } catch (error) {
     console.error('Error', error);
     console.log(error);

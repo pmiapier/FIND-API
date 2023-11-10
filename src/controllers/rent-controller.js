@@ -67,6 +67,7 @@ const verifyPayment = async (req, res, next) => {
                     status: "inprocess",
                 }
             })
+            next()
          } catch (error) {
             next(error)
          }
