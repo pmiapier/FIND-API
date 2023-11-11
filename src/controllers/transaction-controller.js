@@ -2,19 +2,13 @@ const prisma = require(`../models/prisma`);
 const createError = require('../utils/create-error');
 const constantStatus = require('../utils/constant/status')
 const constantFee = require('../utils/constant/fee')
-const constantPoint = require('../utils/constant/point')
+const constantPoint = require('../utils/constant/point');
 
 const createTransaction = async (req, res, next) => {
   try {
     const { itemId } = req.body
 
       console.log(itemId, "ITEM ID")
-    // const findAdmin = await prisma.user.findFirst({
-    //   where: {isAdmin:"1"}
-    // })
-    // console.log("🚀 ~ file: transaction-controller.js:12 ~ createTransaction ~ findAdmin:", findAdmin)
-
-
     const findStatus = await prisma.rent.findFirst({
       where: {
         AND: [{itemId: itemId},{status: constantStatus.completed}]
@@ -31,6 +25,9 @@ const createTransaction = async (req, res, next) => {
         
       }
     });
+    console.log("🚀 ~ file: transaction-controller.js:28 ~ createTransaction ~ findStatus:", findStatus)
+    console.log("🚀 ~ file: transaction-controller.js:28 ~ createTransaction ~ findStatus:", findStatus.owner.wallets)
+    console.log("🚀 ~ file: transaction-controller.js:28 ~ createTransaction ~ findStatus:", findStatus.rentee.wallets)
 
 
     if (findStatus.status === constantStatus.completed) {
@@ -111,9 +108,13 @@ const createTransaction = async (req, res, next) => {
 
 const getTransaction = async(req,res,next) => {
   try {
-    const userId = req.user
-    console.log("🚀 ~ file: transaction-controller.js:99 ~ getTransaction ~ userId:", userId)
-    const orderTransaction = await prisma.rent.findFirst({
+    const userId = req.user.id
+    console.log("🚀 ~ file: transaction-controller.js:113 ~ getTransaction ~ userId:", userId)
+
+    const orderTransactionRentee = await prisma.rent.findMany({
+      where: {
+        AND: [{renteeId: userId},{status:constantStatus.completed}]
+      },
       select: {
         id: true,
         ownerId: true,
@@ -121,15 +122,40 @@ const getTransaction = async(req,res,next) => {
         status: true,
         amount: true,
         deposit: true,
-        owner: { select: { wallets: true } },
-        rentee: { select: { wallets: true } },
-
+        createdAt: true
+    
       }
     });
-    console.log("🚀 ~ file: transaction-controller.js:112 ~ getTransaction ~ findStatus:", orderTransaction)
-    console.log("🚀 ~ file: transaction-controller.js:112 ~ getTransaction ~ findStatus:", orderTransaction.owner.wallets)
-    console.log("🚀 ~ file: transaction-controller.js:112 ~ getTransaction ~ findStatus:", orderTransaction.rentee.wallets)
-    res.status(200).json("get show order success",orderTransaction)
+    console.log("🚀 ~ file: transaction-controller.js:128 ~ getTransaction ~ orderTransaction:", orderTransactionRentee)
+
+    const orderTransactionOwner = await prisma.rent.findMany({
+      where: {
+        AND: [{ownerId: userId},{status:constantStatus.completed}]
+      },
+      select: {
+        id: true,
+        ownerId: true,
+        renteeId: true,
+        status: true,
+        amount: true,
+        deposit: true,
+        createdAt: true
+    
+      }
+    });
+    console.log("🚀 ~ file: transaction-controller.js:147 ~ getTransaction ~ orderTransactionOwner:", orderTransactionOwner)
+    // console.log("🚀 ~ file: transaction-controller.js:112 ~ getTransaction ~ findStatus:", orderTransaction[0].ownerId)
+    // console.log("🚀 ~ file: transaction-controller.js:112 ~ getTransaction ~ findStatus:", orderTransaction.owner.wallets[0].id)
+    // console.log("🚀 ~ file: transaction-controller.js:112 ~ getTransaction ~ findStatus:", orderTransaction.rentee.wallets)
+
+    // orderTransaction.map(async(el) => {
+    //     await prisma.rent.findMany({
+    //     where:{status:el.constantStatus.completed}
+    //   })
+    //   console.log("🚀 ~ file: transaction-controller.js:135 ~ orderTransaction.map ~ a:", a)
+    // })
+
+    res.status(200).json({message:"get show order success",orderTransactionRentee,orderTransactionOwner})
   } catch (error) {
     next(error)
   }

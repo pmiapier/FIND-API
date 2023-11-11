@@ -48,8 +48,7 @@ model Transaction {
   walletId Int
   rentId   Int
   amount   Decimal
-  createdAt   DateTime      @default(now())
-  updatedAt    DateTime      @default(now())
+  // createdAt   DateTime      @default(now())
   wallet   Wallet  @relation(fields: [walletId], references: [id])
   rent     Rent    @relation(fields: [rentId], references: [id])
 }
