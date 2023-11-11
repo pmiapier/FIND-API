@@ -35,7 +35,7 @@ model User {
 }
 
 model Wallet {
-  id           Int         @id @default(autoincrement()) @map("id")
+  id           Int           @id @default(autoincrement()) @map("id")
   userId       Int
   amount       Decimal
   updatedAt    DateTime      @default(now())
@@ -44,14 +44,14 @@ model Wallet {
 }
 
 model Transaction {
-  id       Int     @id @default(autoincrement()) @map("id")
-  walletId Int
-  rentId   Int
-  amount   Decimal
-  createdAt   DateTime      @default(now())
-  updatedAt    DateTime      @default(now())
-  wallet   Wallet  @relation(fields: [walletId], references: [id])
-  rent     Rent    @relation(fields: [rentId], references: [id])
+  id        Int      @id @default(autoincrement()) @map("id")
+  walletId  Int
+  rentId    Int
+  amount    Decimal
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  wallet    Wallet   @relation(fields: [walletId], references: [id])
+  rent      Rent     @relation(fields: [rentId], references: [id])
 }
 
 model Location {
@@ -85,12 +85,12 @@ model categories {
 }
 
 model ItemImage {
-  id       Int    @id @default(autoincrement()) @map("id")
+  id       Int      @id @default(autoincrement()) @map("id")
   itemId   Int
   imageUrl String
   position Int
   createAt DateTime @default(now())
-  item     Item   @relation(fields: [itemId], references: [id])
+  item     Item     @relation(fields: [itemId], references: [id])
 }
 
 model ChatRoom {
