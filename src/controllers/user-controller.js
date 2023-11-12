@@ -7,6 +7,7 @@ const { updateUserSchema } = require('../validators/user-validator');
 const createError = require('../utils/create-error');
 
 const postItem = async (req, res, next) => {
+  console.log('req.body data: ', req.body);
   try {
     const { itemName, itemCategory, itemDescription, itemPrice } = req.body;
     if (req.files) {
