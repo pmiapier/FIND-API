@@ -1,40 +1,6 @@
 const prisma = require(`../models/prisma`)
 
 
-
-
-const createRent = async (req,res,next)=>{
-    try {
-        const {itemId,startRentDate,endRentDate} = req.body
-        const item = await prisma.item.findFirst({
-            where:{id:+itemId},
-            select:{ownerId:true,price:true}
-        })
-        console.log(typeof item.ownerId);
-
-        const rentTime = Math.floor((new Date(endRentDate) - new Date(startRentDate))/(1000*60*60*24))
-        const rent = await prisma.rent.create({
-            data:{
-                status:"inprocess",
-                amount:item.price*rentTime,
-                deposit:item.price*rentTime*0.3,
-                createdAt:new Date(),
-                startRentDate:new Date(startRentDate),
-                endRentDate:new Date(endRentDate),
-                ownerId:item.ownerId,
-                renteeId:req.user.id,
-                itemId:+itemId
-            }
-        })
-
-
-        res.status(200).json(rent)
-    } catch (error) {
-        next(error)
-    }
-}
-
-
 const createRental = async (rental) => {
     try {
         const rent = await prisma.rent.create({
@@ -42,9 +8,8 @@ const createRental = async (rental) => {
                 ownerId: rental.ownerId,
                 renteeId: rental.renteeId,
                 itemId: rental.itemId,
-                startRentDate: rental.startRentDate, 
+                startRentDate: rental.startRentDate,
                 endRentDate: rental.endRentDate,
-                status: rental.status,
                 amount: rental.amount,
                 deposit: rental.deposit,
                 stripeSession: rental.stripeSession,
@@ -62,9 +27,9 @@ const verifyPayment = async (req, res, next) => {
     if(sessionId && success === true) {
         try {
             const updatePayment = await prisma.rent.update({
-                where: { stripeSession: sessionId, status: "awaiting_payment", renteeId: req.user.id},
+                where: { stripeSession: sessionId, rentee_status: "awaiting_payment", renteeId: req.user.id},
                 data: {
-                    status: "inprocess",
+                    rentee_status: "pending_received",
                 }
             })
          } catch (error) {
@@ -75,5 +40,35 @@ const verifyPayment = async (req, res, next) => {
     }
 }
 
+const changeOwnerStatus = async (req, res, next) => {
+    try {
+        const {rentId, status} = req.body
+        const updateStatus = await prisma.rent.update({
+            where: { id: rentId, ownerId: req.user.id },
+            data: {
+                owner_status: status,
+            }
+        })
+        res.status(200).json(updateStatus)
+    } catch (error) {
+        next(error)
+    }
+}
 
-module.exports ={createRent, createRental, verifyPayment}
+const changeRenteeStatus = async (req, res, next) => {
+    try {
+        const {rentId, status} = req.body
+        const updateStatus = await prisma.rent.update({
+            where: { id: rentId, renteeId: req.user.id },
+            data: {
+                rentee_status: status,
+            }
+        })
+        res.status(200).json(updateStatus)
+    } catch (error) {
+        next(error)
+    }
+}
+
+
+module.exports ={createRental, verifyPayment, changeOwnerStatus, changeRenteeStatus}

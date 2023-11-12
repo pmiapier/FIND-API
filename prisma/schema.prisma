@@ -35,7 +35,7 @@ model User {
 }
 
 model Wallet {
-  id           Int         @id @default(autoincrement()) @map("id")
+  id           Int           @id @default(autoincrement()) @map("id")
   userId       Int
   amount       Decimal
   updatedAt    DateTime      @default(now())
@@ -44,14 +44,14 @@ model Wallet {
 }
 
 model Transaction {
-  id       Int     @id @default(autoincrement()) @map("id")
-  walletId Int
-  rentId   Int
-  amount   Decimal
-  createdAt   DateTime      @default(now())
-  updatedAt    DateTime      @default(now())
-  wallet   Wallet  @relation(fields: [walletId], references: [id])
-  rent     Rent    @relation(fields: [rentId], references: [id])
+  id        Int      @id @default(autoincrement()) @map("id")
+  walletId  Int
+  rentId    Int
+  amount    Decimal
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  wallet    Wallet   @relation(fields: [walletId], references: [id])
+  rent      Rent     @relation(fields: [rentId], references: [id])
 }
 
 model Location {
@@ -85,12 +85,12 @@ model categories {
 }
 
 model ItemImage {
-  id       Int    @id @default(autoincrement()) @map("id")
+  id       Int      @id @default(autoincrement()) @map("id")
   itemId   Int
   imageUrl String
   position Int
   createAt DateTime @default(now())
-  item     Item   @relation(fields: [itemId], references: [id])
+  item     Item     @relation(fields: [itemId], references: [id])
 }
 
 model ChatRoom {
@@ -123,6 +123,8 @@ model Rent {
   createdAt     DateTime      @default(now())
   startRentDate DateTime
   endRentDate   DateTime
+  owner_status  owner_status  @default(pending_delivery)
+  rentee_status rentee_status @default(awaiting_payment)
   status        order_status  @default(inprocess)
   amount        Decimal
   deposit       Decimal
@@ -162,6 +164,21 @@ enum order_status {
   awaiting_payment
   inprocess
   renting
+  completed
+  dispute
+}
+
+enum owner_status {
+  pending_delivery
+  renting
+  completed
+  dispute
+}
+
+enum rentee_status {
+  awaiting_payment
+  pending_received
+  received_item
   completed
   dispute
 }
