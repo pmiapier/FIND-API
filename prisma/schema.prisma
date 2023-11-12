@@ -188,3 +188,24 @@ enum message_type {
   video
   image
 }
+
+model Dispute {
+  id                  Int            @id @default(autoincrement()) @map("id")
+  rentId              Int
+  userOpenedDisputeId Int
+  rentee_status       dispute_status
+  owner_status        dispute_status
+}
+
+model DisputeMessages {
+  id        Int    @id @default(autoincrement()) @map("id")
+  disputeId Int
+  userId    Int
+  message   String
+}
+
+enum dispute_status {
+  open
+  escalated
+  resolved
+}
