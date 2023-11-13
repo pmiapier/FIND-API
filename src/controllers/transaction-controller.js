@@ -3,16 +3,17 @@ const createError = require('../utils/create-error');
 const constantStatus = require('../utils/constant/status')
 const constantFee = require('../utils/constant/fee')
 const constantPoint = require('../utils/constant/point');
+const error = require('../middlewares/error');
 
 const createTransaction = async (req, res, next) => {
   try {
-    const { itemId } = req.body
+    const { rentId } = req.body
     
 
-      console.log(itemId, "ITEM ID")
+      console.log(rentId, "ITEM ID")
     const findStatus = await prisma.rent.findFirst({
       where: {
-        AND: [{itemId: itemId},{status: constantStatus.completed}]
+        id: rentId
       },
       select: {
         id: true,
@@ -27,11 +28,14 @@ const createTransaction = async (req, res, next) => {
       }
     });
     console.log("🚀 ~ file: transaction-controller.js:28 ~ createTransaction ~ findStatus:", findStatus)
-    console.log("🚀 ~ file: transaction-controller.js:28 ~ createTransaction ~ findStatus:", findStatus.owner.wallets)
-    console.log("🚀 ~ file: transaction-controller.js:28 ~ createTransaction ~ findStatus:", findStatus.rentee.wallets)
+    console.log("🚀 ~ file: transaction-controller.js:28 ~ createTransaction ~ findStatus:", findStatus?.owner?.wallets)
+    console.log("🚀 ~ file: transaction-controller.js:28 ~ createTransaction ~ findStatus:", findStatus?.rentee?.wallets)
 
 
+    console.log(findStatus)
+    // if (findStatus.status === constantStatus.completed) {
     if (findStatus) {
+
       // let body = [];
       const Fee = constantFee.FEE 
       const serviceCharge = (parseFloat(findStatus.amount) * parseFloat(Fee))
@@ -46,8 +50,9 @@ const createTransaction = async (req, res, next) => {
           rentId: findStatus.id,
           amount: findStatus.deposit
         },
+        // create แยก
         {
-          walletId: 1,
+          walletId: 2,
           rentId: findStatus.id,
           amount: serviceCharge
         }
@@ -90,6 +95,7 @@ const createTransaction = async (req, res, next) => {
             });
             
             const updatePoint = parseInt(constantPoint.POINT) + parseInt(findUserIdByWallet.user.point)
+           
             // body.push(updatePoint)
 
             await prisma.user.update({
@@ -102,18 +108,16 @@ const createTransaction = async (req, res, next) => {
             });
           
           });
-
-        
-          poiny = {
-            userPoint:updatePoint
-          }
           
-      res.status(200).json({createDataTransaction,poiny});
-      pda
+      res.status(200).json({createDataTransaction});
+      // res.status(200).json(createDataTransaction);
+      
     }
 
   } catch (error) {
-    next(createError("status is not completed ! ",400));
+    // next(createError("status is not completed ! ",400));
+    console.log(error)
+    next(error)
   }
 };
 
