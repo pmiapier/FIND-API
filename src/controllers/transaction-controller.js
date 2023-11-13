@@ -10,7 +10,7 @@ const createTransaction = async (req, res, next) => {
     const { rentId } = req.body
     
 
-      console.log(rentId, "ITEM ID")
+      // console.log(rentId, "ITEM ID")
     const findStatus = await prisma.rent.findFirst({
       where: {
         id: rentId
@@ -19,6 +19,8 @@ const createTransaction = async (req, res, next) => {
         id: true,
         ownerId: true,
         renteeId: true,
+        owner_status: true,
+        rentee_status:true,
         status: true,
         amount: true,
         deposit: true,
@@ -27,16 +29,13 @@ const createTransaction = async (req, res, next) => {
         
       }
     });
-    console.log("🚀 ~ file: transaction-controller.js:28 ~ createTransaction ~ findStatus:", findStatus)
-    console.log("🚀 ~ file: transaction-controller.js:28 ~ createTransaction ~ findStatus:", findStatus?.owner?.wallets)
-    console.log("🚀 ~ file: transaction-controller.js:28 ~ createTransaction ~ findStatus:", findStatus?.rentee?.wallets)
+    // console.log("🚀 ~ file: transaction-controller.js:28 ~ createTransaction ~ findStatus:", findStatus)
+    // console.log("🚀 ~ file: transaction-controller.js:28 ~ createTransaction ~ findStatus:", findStatus?.owner?.wallets)
+    // console.log("🚀 ~ file: transaction-controller.js:28 ~ createTransaction ~ findStatus:", findStatus?.rentee?.wallets)
 
 
-    console.log(findStatus)
-    // if (findStatus.status === constantStatus.completed) {
-    if (findStatus) {
+    if (findStatus.owner_status === constantStatus.completed && findStatus.rentee_status === constantStatus.completed) {
 
-      // let body = [];
       const Fee = constantFee.FEE 
       const serviceCharge = (parseFloat(findStatus.amount) * parseFloat(Fee))
       const dataTransaction = [
@@ -50,9 +49,8 @@ const createTransaction = async (req, res, next) => {
           rentId: findStatus.id,
           amount: findStatus.deposit
         },
-        // create แยก
         {
-          walletId: 2,
+          walletId: 1,
           rentId: findStatus.id,
           amount: serviceCharge
         }
@@ -73,12 +71,12 @@ const createTransaction = async (req, res, next) => {
               },
               include:{
                 user:{
-                  select: {point:true}
+                  select: {point:true},
+                  select: {isAdmin:true}
                 },
                 
               }
             });
-            console.log("🚀 ~ file: transaction-controller.js:70 ~ dataTransaction?.map ~ findUserIdByWallet:", findUserIdByWallet)
 
             // ( amount from transaction + amount userId )
             const updateAmount = parseFloat(data?.amount) + parseFloat(findUserIdByWallet?.amount)
@@ -95,18 +93,19 @@ const createTransaction = async (req, res, next) => {
             });
             
             const updatePoint = parseInt(constantPoint.POINT) + parseInt(findUserIdByWallet.user.point)
-           
-            // body.push(updatePoint)
+           console.log("sasssssssssssssssssssssssssssss",findUserIdByWallet.user.isAdmin)
 
-            await prisma.user.update({
-              where: {
-                  id: findUserIdByWallet?.userId 
-              },
-                data: {
-                    point: updatePoint,
-                }
-            });
-          
+            if(findUserIdByWallet?.user.isAdmin != 1){
+              await prisma.user.update({
+                where: {
+                    id: findUserIdByWallet?.userId 
+                },
+                  data: {
+                      point: updatePoint,
+                  }
+              });
+            }
+      
           });
           
       res.status(200).json({createDataTransaction});
