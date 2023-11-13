@@ -7,6 +7,7 @@ const constantPoint = require('../utils/constant/point');
 const createTransaction = async (req, res, next) => {
   try {
     const { itemId } = req.body
+    
 
       console.log(itemId, "ITEM ID")
     const findStatus = await prisma.rent.findFirst({
@@ -30,7 +31,8 @@ const createTransaction = async (req, res, next) => {
     console.log("🚀 ~ file: transaction-controller.js:28 ~ createTransaction ~ findStatus:", findStatus.rentee.wallets)
 
 
-    if (findStatus.status === constantStatus.completed) {
+    if (findStatus) {
+      // let body = [];
       const Fee = constantFee.FEE 
       const serviceCharge = (parseFloat(findStatus.amount) * parseFloat(Fee))
       const dataTransaction = [
@@ -75,6 +77,8 @@ const createTransaction = async (req, res, next) => {
 
             // ( amount from transaction + amount userId )
             const updateAmount = parseFloat(data?.amount) + parseFloat(findUserIdByWallet?.amount)
+
+            
   
             await prisma.wallet.update({
               where: {
@@ -86,6 +90,7 @@ const createTransaction = async (req, res, next) => {
             });
             
             const updatePoint = parseInt(constantPoint.POINT) + parseInt(findUserIdByWallet.user.point)
+            // body.push(updatePoint)
 
             await prisma.user.update({
               where: {
@@ -97,8 +102,14 @@ const createTransaction = async (req, res, next) => {
             });
           
           });
+
+        
+          poiny = {
+            userPoint:updatePoint
+          }
           
-      res.status(200).json(createDataTransaction);
+      res.status(200).json({createDataTransaction,poiny});
+      pda
     }
 
   } catch (error) {
@@ -144,21 +155,35 @@ const getTransaction = async(req,res,next) => {
       }
     });
     console.log("🚀 ~ file: transaction-controller.js:147 ~ getTransaction ~ orderTransactionOwner:", orderTransactionOwner)
-    // console.log("🚀 ~ file: transaction-controller.js:112 ~ getTransaction ~ findStatus:", orderTransaction[0].ownerId)
-    // console.log("🚀 ~ file: transaction-controller.js:112 ~ getTransaction ~ findStatus:", orderTransaction.owner.wallets[0].id)
-    // console.log("🚀 ~ file: transaction-controller.js:112 ~ getTransaction ~ findStatus:", orderTransaction.rentee.wallets)
-
-    // orderTransaction.map(async(el) => {
-    //     await prisma.rent.findMany({
-    //     where:{status:el.constantStatus.completed}
-    //   })
-    //   console.log("🚀 ~ file: transaction-controller.js:135 ~ orderTransaction.map ~ a:", a)
-    // })
+ 
 
     res.status(200).json({message:"get show order success",orderTransactionRentee,orderTransactionOwner})
   } catch (error) {
     next(error)
   }
 } 
+
+// const getPoint = async() =>{
+//    try {
+//     const findUserIdByWallet = await prisma.wallet.findFirst({
+//       where: {
+//         userId: data?.walletId
+//       },
+//       include:{
+//         user:{
+//           select: {point:true}
+//         },
+        
+//       }
+//     });
+//     const updatePoint = parseInt(constantPoint.POINT) + parseInt(findUserIdByWallet.user.point)
+//     res.status(200).json(findUserIdByWallet)
+//    } catch (error) {
+//     next(error)
+//     console.log("error")
+//    }
+// }
+
+
 
 module.exports = { createTransaction,getTransaction };
