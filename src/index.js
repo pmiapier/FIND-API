@@ -21,7 +21,6 @@ const rateLimitMiddleware = require(`./middlewares/rate-limit`);
 //# TEE
 const createCheckoutSession = require("./payment/checkout");
 //#####
-const {orderTemplate} = require(`./middlewares/emailNotificationTemplate`)
 
 
 app.use(morgan("dev"));
@@ -35,9 +34,6 @@ app.get("/", (req, res) => res.send("Welcome to FIND"));
 app.post("/create-checkout-session", createCheckoutSession);
 //#####
 
-// test
-app.get(`/test`,orderTemplate)
-// test
 
 app.use(`/auth`, authRoute);
 app.use(`/item`, itemRoute);
