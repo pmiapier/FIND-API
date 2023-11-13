@@ -68,7 +68,7 @@ model Item {
   categoriesId Int
   title        String
   description  String      @db.LongText
-  status       item_status @default(stock)
+  status       item_status @default(available) //old one was : stock
   price        Decimal
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @default(now())
@@ -154,10 +154,11 @@ model ReportImg {
 }
 
 enum item_status {
-  stock
+  // stock
   available
-  reserve
-  renting
+  unavailable
+  // reserve
+  // renting
 }
 
 enum order_status {
