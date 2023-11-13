@@ -2,6 +2,16 @@ const express = require("express");
 const app = express();
 const cors = require(`cors`);
 const morgan = require("morgan");
+const http = require("http");
+const { Server } = require("socket.io");
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+  },
+});
+require('./socket-io')(io);
 
 require("dotenv").config();
 const PORT = process.env.PORT || "8000";
@@ -42,6 +52,6 @@ app.use(`/wallet`, wallet);
 app.use(notFound);
 app.use(serverError);
 
-app.listen(8000, () => {
+server.listen(8000, () => {
   console.log(`Server is alive on http://localhost:${PORT}`);
 });

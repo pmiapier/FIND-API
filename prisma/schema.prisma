@@ -29,9 +29,9 @@ model User {
   renterRents Rent[]        @relation("renterRents")
   reports     Report[]
   wallets     Wallet[]
-  chatRoomA   ChatRoom[]    @relation("userA")
-  chatRoomB   ChatRoom[]    @relation("userB")
-  chatMessage ChatMessage[]
+  chatroomsA Chatroom[] @relation("chatroomsA")
+  chatroomsB Chatroom[] @relation("chatroomsB")
+  messages   Message[]
 }
 
 model Wallet {
@@ -93,26 +93,26 @@ model ItemImage {
   item     Item   @relation(fields: [itemId], references: [id])
 }
 
-model ChatRoom {
-  id           Int           @id @default(autoincrement()) @map("id")
-  userAId      Int
-  userBId      Int
-  userASeen    DateTime
-  userBSeen    DateTime
-  userA        User          @relation("userA", fields: [userAId], references: [id])
-  userB        User          @relation("userB", fields: [userBId], references: [id])
-  chatMessages ChatMessage[]
+model Chatroom {
+  id             Int       @id @default(autoincrement()) @map("id")
+  userA_id       Int
+  userB_id       Int
+  userA_lastseen DateTime?
+  userB_lastseen DateTime?
+  userA          User      @relation("chatroomsA", fields: [userA_id], references: [id])
+  userB          User      @relation("chatroomsB", fields: [userB_id], references: [id])
+  messages       Message[]
 }
 
-model ChatMessage {
-  id         Int          @id @default(autoincrement()) @map("id")
-  chatroomId Int
-  senderId   Int
-  message    String
-  type       message_type
-  date       DateTime
-  chatroom   ChatRoom     @relation(fields: [chatroomId], references: [id])
-  sender     User         @relation(fields: [senderId], references: [id])
+model Message {
+  id          Int          @id @default(autoincrement()) @map("id")
+  chatroom_id Int
+  sender_id   Int
+  message     String    @db.LongText
+  type        message_type
+  send_date   DateTime
+  chatroom    Chatroom     @relation(fields: [chatroom_id], references: [id])
+  sender      User         @relation(fields: [sender_id], references: [id])
 }
 
 model Rent {
