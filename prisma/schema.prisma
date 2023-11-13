@@ -80,7 +80,7 @@ model Item {
 
 model categories {
   id    Int    @id @default(autoincrement()) @map("id")
-  name  String
+  name  String @unique
   items Item[]
 }
 
