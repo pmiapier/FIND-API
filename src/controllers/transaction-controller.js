@@ -71,8 +71,8 @@ const createTransaction = async (req, res, next) => {
               },
               include:{
                 user:{
-                  select: {point:true},
-                  select: {isAdmin:true}
+                  select: {point:true,isAdmin:true},
+                
                 },
                 
               }
@@ -91,12 +91,15 @@ const createTransaction = async (req, res, next) => {
                     amount: updateAmount,
                 }
             });
+            console.log("-----------------------------------------------------")
+            console.log("findUserIdByWallet",findUserIdByWallet)
+            console.log("Point || Admin",findUserIdByWallet.user)
+            console.log("isAdmin",findUserIdByWallet.user.isAdmin)
             
-            const updatePoint = parseInt(constantPoint.POINT) + parseInt(findUserIdByWallet.user.point)
-           console.log("sasssssssssssssssssssssssssssss",findUserIdByWallet.user.isAdmin)
-
-            if(findUserIdByWallet?.user.isAdmin != 1){
-              await prisma.user.update({
+            
+            if(findUserIdByWallet?.user.isAdmin == false){
+              const updatePoint = parseInt(constantPoint.POINT) + parseInt(findUserIdByWallet.user.point)
+              const updatePointttt = await prisma.user.update({
                 where: {
                     id: findUserIdByWallet?.userId 
                 },
@@ -104,6 +107,8 @@ const createTransaction = async (req, res, next) => {
                       point: updatePoint,
                   }
               });
+              console.log("-----------------------------------------------------")
+              console.log("🚀 ~ file: transaction-controller.js:109 ~ dataTransaction?.map ~ updatePointttt:", updatePointttt)
             }
       
           });
