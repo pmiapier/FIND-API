@@ -23,6 +23,7 @@ const adminRoute = require(`./routes/admin-route`);
 const rentRote = require(`./routes/rent_route`);
 const transactionRote = require(`./routes/transaction-route`);
 const wallet = require(`./routes/wallet-route`);
+const chatRoute = require(`./routes/chat-route`);
 const notFound = require(`./middlewares/not-found`);
 const serverError = require(`./middlewares/error`);
 const rateLimitMiddleware = require(`./middlewares/rate-limit`);
@@ -47,6 +48,7 @@ app.use(`/admin`, adminRoute);
 app.use(`/rent`, rentRote);
 app.use(`/transaction`, transactionRote);
 app.use(`/wallet`, wallet);
+app.use('/chat', chatRoute)
 
 
 app.use(notFound);

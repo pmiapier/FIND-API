@@ -2,13 +2,14 @@ const prisma = require(`../models/prisma`);
 
 const chatRooms = async (req, res) => {
     try {
+        // console.log(req.query.user, "**********************")
         const namex = req.query.user
         const idx = await prisma.user.findFirst({
             where: {
-                user: namex
+                id: +namex
             }
         })
-        console.log('....................................', idx);
+        // console.log('....................................', idx);
 
         const chatRooms = await prisma.chatroom.findMany({
             where: {
@@ -19,7 +20,7 @@ const chatRooms = async (req, res) => {
                 userB: true,
             }
         });
-        // console.log(chatRooms);
+        console.log(chatRooms);
         res.json(chatRooms);
     } catch (error) {
         console.log(error);
