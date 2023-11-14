@@ -24,7 +24,7 @@ const postItem = async (req, res, next) => {
         }
       });
 
-      await req.files.map(async (item, index) => {
+      const uploadPromises = await req.files.map(async (item, index) => {
         try {
           const a = await cloundinary.uploader.upload(item.path);
           fs.unlink(item.path, (err) => {
@@ -41,6 +41,8 @@ const postItem = async (req, res, next) => {
           console.log(error);
         }
       });
+
+      await Promise.all(uploadPromises);
       res.status(200).json({ message: `post done` });
     }
   } catch (error) {
@@ -50,9 +52,24 @@ const postItem = async (req, res, next) => {
 
 const updateItem = async (req, res, next) => {
   try {
-    const { title, categories, description, price, id, position, availability } = JSON.parse(req.body.json);
+    const {
+      title,
+      categories: newCategories,
+      description,
+      price,
+      id,
+      position,
+      availability
+    } = JSON.parse(req.body.json);
 
-    await prisma.item.updateMany({
+    // console.log('updateItem log:', req.body);
+    const newCategoryByName = await prisma.categories.findFirst({
+      where: {
+        name: newCategories
+      }
+    });
+
+    await prisma.item.update({
       where: {
         id: +id
       },
@@ -61,32 +78,57 @@ const updateItem = async (req, res, next) => {
         description,
         price,
         updatedAt: new Date(),
-        status: availability
+        status: availability,
+        categoriesId: newCategoryByName.id
       }
     });
+
     if (req.files) {
       await prisma.itemImage.deleteMany({
         where: {
           itemId: +id
         }
       });
-      await req.files.map(async (item, index) => {
-        try {
-          const a = await cloundinary.uploader.upload(item.path);
-          await prisma.itemImage.create({
-            data: {
-              position: index + 1,
-              imageUrl: a.secure_url,
-              itemId: +id
-            }
-          });
-        } catch (error) {
-          console.log(error);
-        }
-      });
+      await Promise.all(
+        req.files.map(async (item, index) => {
+          try {
+            const a = await cloundinary.uploader.upload(item.path);
+            await prisma.itemImage.create({
+              data: {
+                position: index + 1,
+                imageUrl: a.secure_url,
+                itemId: +id
+              }
+            });
+          } catch (error) {
+            console.error('there is an error: ', error);
+            console.log(error);
+          }
+        })
+      );
     }
 
     res.status(200).json({ msg: `done` });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateItemStatus = async (req, res, next) => {
+  const { productId } = req.body;
+
+  try {
+    const updatedItem = await prisma.item.update({
+      where: {
+        id: +productId
+      },
+      data: {
+        status: 'available'
+      }
+    });
+    console.log('updatedItem data: ', updatedItem);
+    const ownerId = updatedItem.ownerId;
+    res.status(200).json({ ownerId });
   } catch (error) {
     next(error);
   }
@@ -256,4 +298,4 @@ const dashboard = async (req, res, next) => {
   }
 };
 
-module.exports = { postItem, updateItem, deleteItem, renewItem, updateUser, dashboard, getMyProduct };
+module.exports = { postItem, updateItem, deleteItem, renewItem, updateUser, dashboard, getMyProduct, updateItemStatus };
