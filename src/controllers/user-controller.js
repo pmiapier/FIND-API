@@ -9,7 +9,7 @@ const createError = require('../utils/create-error');
 const postItem = async (req, res, next) => {
   try {
     const { itemName, itemCategory, itemDescription, itemPrice, availability } = req.body;
-    console.log(availability, '------s');
+    // console.log(availability);
     if (req.files) {
       const categoriesId = await prisma.categories.findFirst({ where: { name: itemCategory } });
 
@@ -20,7 +20,8 @@ const postItem = async (req, res, next) => {
           price: itemPrice,
           categoriesId: categoriesId.id,
           ownerId: req.user.id,
-          status: availability
+          status: 'available'
+          // status: availability
         }
       });
 
@@ -52,15 +53,7 @@ const postItem = async (req, res, next) => {
 
 const updateItem = async (req, res, next) => {
   try {
-    const {
-      title,
-      categories: newCategories,
-      description,
-      price,
-      id,
-      position,
-      availability
-    } = JSON.parse(req.body.json);
+    const { title, categories: newCategories, description, price, id, position, availability } = req.body;
 
     // console.log('updateItem log:', req.body);
     const newCategoryByName = await prisma.categories.findFirst({
@@ -140,6 +133,9 @@ const getMyProduct = async (req, res, next) => {
     const data = await prisma.item.findMany({
       where: {
         ownerId: +userId
+      },
+      orderBy: {
+        createdAt: 'desc'
       },
       include: {
         images: {
