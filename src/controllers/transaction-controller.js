@@ -5,6 +5,7 @@ const constantFee = require('../utils/constant/fee')
 const constantPoint = require('../utils/constant/point');
 const error = require('../middlewares/error');
 
+
 const createTransaction = async (req, res, next) => {
   try {
     const { rentId } = req.body
@@ -69,6 +70,7 @@ const createTransaction = async (req, res, next) => {
               where: {
                 userId: data?.walletId
               },
+              
               include:{
                 user:{
                   select: {point:true,isAdmin:true},
@@ -91,10 +93,10 @@ const createTransaction = async (req, res, next) => {
                     amount: updateAmount,
                 }
             });
-            console.log("-----------------------------------------------------")
-            console.log("findUserIdByWallet",findUserIdByWallet)
-            console.log("Point || Admin",findUserIdByWallet.user)
-            console.log("isAdmin",findUserIdByWallet.user.isAdmin)
+            // console.log("-----------------------------------------------------")
+            // console.log("findUserIdByWallet",findUserIdByWallet)
+            // console.log("Point || Admin",findUserIdByWallet.user)
+            // console.log("isAdmin",findUserIdByWallet.user.isAdmin)
             
             
             if(findUserIdByWallet?.user.isAdmin == false){
@@ -107,8 +109,8 @@ const createTransaction = async (req, res, next) => {
                       point: updatePoint,
                   }
               });
-              console.log("-----------------------------------------------------")
-              console.log("🚀 ~ file: transaction-controller.js:109 ~ dataTransaction?.map ~ updatePointttt:", updatePointttt)
+              // console.log("-----------------------------------------------------")
+              // console.log("🚀 ~ file: transaction-controller.js:109 ~ dataTransaction?.map ~ updatePointttt:", updatePointttt)
             }
       
           });
@@ -132,30 +134,33 @@ const getTransaction = async(req,res,next) => {
 
     const orderTransactionRentee = await prisma.rent.findMany({
       where: {
-        AND: [{renteeId: userId},{status:constantStatus.completed}]
+        AND: [{renteeId: userId},{rentee_status:constantStatus.completed}]
       },
       select: {
         id: true,
         ownerId: true,
         renteeId: true,
-        status: true,
+        rentee_status: true,
+        owner_status:true,
         amount: true,
         deposit: true,
         createdAt: true
-    
-      }
+      },
     });
     console.log("🚀 ~ file: transaction-controller.js:128 ~ getTransaction ~ orderTransaction:", orderTransactionRentee)
+    console.log("🚀 ~ file: transaction-controller.js:128 ~ getTransaction ~ deposit:", orderTransactionRentee.deposit)
+    console.log("--------------------------------------------------------------------------------------------------")
 
     const orderTransactionOwner = await prisma.rent.findMany({
       where: {
-        AND: [{ownerId: userId},{status:constantStatus.completed}]
+        AND: [{ownerId: userId},{owner_status:constantStatus.completed}]
       },
       select: {
         id: true,
         ownerId: true,
         renteeId: true,
-        status: true,
+        rentee_status:true,
+        owner_status: true,
         amount: true,
         deposit: true,
         createdAt: true
@@ -163,35 +168,89 @@ const getTransaction = async(req,res,next) => {
       }
     });
     console.log("🚀 ~ file: transaction-controller.js:147 ~ getTransaction ~ orderTransactionOwner:", orderTransactionOwner)
- 
 
     res.status(200).json({message:"get show order success",orderTransactionRentee,orderTransactionOwner})
+    // res.status(200).json({message:"get show order success"})
   } catch (error) {
     next(error)
   }
 } 
 
-// const getPoint = async() =>{
-//    try {
-//     const findUserIdByWallet = await prisma.wallet.findFirst({
-//       where: {
-//         userId: data?.walletId
-//       },
-//       include:{
-//         user:{
-//           select: {point:true}
-//         },
-        
-//       }
-//     });
-//     const updatePoint = parseInt(constantPoint.POINT) + parseInt(findUserIdByWallet.user.point)
-//     res.status(200).json(findUserIdByWallet)
-//    } catch (error) {
-//     next(error)
-//     console.log("error")
-//    }
-// }
+const getPending = async(req,res,next) => {
+  try {
+    const userId = req.user.id
+    console.log("🚀 ~ file: transaction-controller.js:113 ~ getTransaction ~ userId:", userId)
+
+    const amountStatusRentee = await prisma.rent.aggregate({
+      where: {
+        AND: [{renteeId: userId},
+        {
+          OR:[
+            {rentee_status:constantStatus.pending_received},{rentee_status:constantStatus.awaiting_payment}
+          ]
+        }  
+        ]
+      },
+      _sum: {
+        // id: true,
+        // ownerId: true,
+        // renteeId: true,
+        // rentee_status: true,
+        // owner_status:true,
+        // amount: true,
+        deposit: true,
+        // createdAt: true
+      },
+    });
+    console.log("🚀 ~ file: transaction-controller.js:128 ~ getTransaction ~ amountStatusRentee:", amountStatusRentee)
+    // console.log("🚀 ~ file: transaction-controller.js:128 ~ getTransaction ~ amountStatusRentee:", amountStatusRentee.deposit)
+    console.log("--------------------------------------------------------------------------------------------------")
+
+    const amountStatusOwner = await prisma.rent.aggregate({
+      where: {
+        AND: [{ownerId: userId},
+        {
+          OR:[
+            {owner_status:constantStatus.renting},
+            {owner_status:constantStatus.pending_delivery}
+          ]
+        }  
+        ]
+      },
+
+      // where: {
+      //   AND: [{renteeId: userId},
+      //   {
+      //     OR:[
+      //       {rentee_status:constantStatus.pending_received},{rentee_status:constantStatus.awaiting_payment}
+      //     ]
+      //   }  
+      //   ]
+      // },
+
+
+      _sum: {
+        // id: true,
+        // ownerId: true,
+        // renteeId: true,
+        // rentee_status:true,
+        // owner_status: true,
+        amount: true,
+        // deposit: true,
+        // createdAt: true
+    
+      }
+    });
+    console.log("🚀 ~ file: transaction-controller.js:147 ~ getTransaction ~ amountStatusOwner:", amountStatusOwner)
+
+
+    res.status(200).json({message:"get show order success",amountStatusRentee,amountStatusOwner})
+    // res.status(200).json({message:"get show order success"})
+  } catch (error) {
+    next(error)
+  }
+} 
 
 
 
-module.exports = { createTransaction,getTransaction };
+module.exports = { createTransaction,getTransaction,getPending };
