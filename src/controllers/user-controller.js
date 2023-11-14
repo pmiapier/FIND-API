@@ -20,8 +20,8 @@ const postItem = async (req, res, next) => {
           price: itemPrice,
           categoriesId: categoriesId.id,
           ownerId: req.user.id,
-          status: 'available'
-          // status: availability
+          // status: 'available'
+          status: availability
         }
       });
 
