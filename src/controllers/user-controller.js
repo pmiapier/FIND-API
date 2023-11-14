@@ -9,6 +9,7 @@ const createError = require('../utils/create-error');
 const postItem = async (req, res, next) => {
   try {
     const { itemName, itemCategory, itemDescription, itemPrice, availability } = req.body;
+    console.log(availability, '------s');
     if (req.files) {
       const categoriesId = await prisma.categories.findFirst({ where: { name: itemCategory } });
 
