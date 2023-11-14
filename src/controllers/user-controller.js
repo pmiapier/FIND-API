@@ -7,7 +7,6 @@ const { updateUserSchema } = require('../validators/user-validator');
 const createError = require('../utils/create-error');
 
 const postItem = async (req, res, next) => {
-  console.log('req.body data: ', req.body);
   try {
     const { itemName, itemCategory, itemDescription, itemPrice } = req.body;
     if (req.files) {
@@ -52,7 +51,7 @@ const postItem = async (req, res, next) => {
 const updateItem = async (req, res, next) => {
   try {
     const { title, categories: newCategories, description, price, id, position } = req.body;
-    console.log('updateItem log:', req.body);
+    // console.log('updateItem log:', req.body);
     const newCategoryByName = await prisma.categories.findFirst({
       where: {
         name: newCategories
