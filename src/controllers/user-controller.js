@@ -8,7 +8,8 @@ const createError = require('../utils/create-error');
 
 const postItem = async (req, res, next) => {
   try {
-    const { itemName, itemCategory, itemDescription, itemPrice } = req.body;
+    const { itemName, itemCategory, itemDescription, itemPrice, availability } = req.body;
+    // console.log(availability);
     if (req.files) {
       const categoriesId = await prisma.categories.findFirst({ where: { name: itemCategory } });
 
@@ -18,7 +19,9 @@ const postItem = async (req, res, next) => {
           description: itemDescription,
           price: itemPrice,
           categoriesId: categoriesId.id,
-          ownerId: req.user.id
+          ownerId: req.user.id,
+          // status: 'available'
+          status: availability
         }
       });
 
@@ -50,7 +53,8 @@ const postItem = async (req, res, next) => {
 
 const updateItem = async (req, res, next) => {
   try {
-    const { title, categories: newCategories, description, price, id, position } = req.body;
+    const { title, categories: newCategories, description, price, id, position, availability } = req.body;
+
     // console.log('updateItem log:', req.body);
     const newCategoryByName = await prisma.categories.findFirst({
       where: {
@@ -67,6 +71,7 @@ const updateItem = async (req, res, next) => {
         description,
         price,
         updatedAt: new Date(),
+        status: availability,
         categoriesId: newCategoryByName.id
       }
     });
@@ -128,6 +133,9 @@ const getMyProduct = async (req, res, next) => {
     const data = await prisma.item.findMany({
       where: {
         ownerId: +userId
+      },
+      orderBy: {
+        createdAt: 'desc'
       },
       include: {
         images: {
