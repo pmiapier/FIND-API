@@ -68,7 +68,7 @@ model Item {
   categoriesId Int
   title        String
   description  String      @db.LongText
-  status       item_status @default(stock)
+  status       item_status @default(available) //old one was : stock
   price        Decimal
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @default(now())
@@ -80,7 +80,7 @@ model Item {
 
 model categories {
   id    Int    @id @default(autoincrement()) @map("id")
-  name  String
+  name  String @unique
   items Item[]
 }
 
@@ -123,6 +123,8 @@ model Rent {
   createdAt     DateTime      @default(now())
   startRentDate DateTime
   endRentDate   DateTime
+  owner_status  owner_status  @default(pending_delivery)
+  rentee_status rentee_status @default(awaiting_payment)
   status        order_status  @default(inprocess)
   amount        Decimal
   deposit       Decimal
@@ -152,16 +154,32 @@ model ReportImg {
 }
 
 enum item_status {
-  stock
+  // stock
   available
-  reserve
-  renting
+  unavailable
+  // reserve
+  // renting
 }
 
 enum order_status {
   awaiting_payment
   inprocess
   renting
+  completed
+  dispute
+}
+
+enum owner_status {
+  pending_delivery
+  renting
+  completed
+  dispute
+}
+
+enum rentee_status {
+  awaiting_payment
+  pending_received
+  received_item
   completed
   dispute
 }
