@@ -8,7 +8,8 @@ const createError = require('../utils/create-error');
 
 const postItem = async (req, res, next) => {
   try {
-    const { itemName, itemCategory, itemDescription, itemPrice } = req.body;
+    const { itemName, itemCategory, itemDescription, itemPrice, availability } = req.body;
+    // console.log(availability);
     if (req.files) {
       const categoriesId = await prisma.categories.findFirst({ where: { name: itemCategory } });
 
@@ -18,11 +19,13 @@ const postItem = async (req, res, next) => {
           description: itemDescription,
           price: itemPrice,
           categoriesId: categoriesId.id,
-          ownerId: req.user.id
+          ownerId: req.user.id,
+          // status: 'available'
+          status: availability
         }
       });
 
-      await req.files.map(async (item, index) => {
+      const uploadPromises = await req.files.map(async (item, index) => {
         try {
           const a = await cloundinary.uploader.upload(item.path);
           fs.unlink(item.path, (err) => {
@@ -39,6 +42,8 @@ const postItem = async (req, res, next) => {
           console.log(error);
         }
       });
+
+      await Promise.all(uploadPromises);
       res.status(200).json({ message: `post done` });
     }
   } catch (error) {
@@ -48,9 +53,16 @@ const postItem = async (req, res, next) => {
 
 const updateItem = async (req, res, next) => {
   try {
-    const { title, categories, description, price, id, position } = JSON.parse(req.body.json);
+    const { title, categories: newCategories, description, price, id, position, availability } = req.body;
 
-    await prisma.item.updateMany({
+    // console.log('updateItem log:', req.body);
+    const newCategoryByName = await prisma.categories.findFirst({
+      where: {
+        name: newCategories
+      }
+    });
+
+    await prisma.item.update({
       where: {
         id: +id
       },
@@ -58,32 +70,58 @@ const updateItem = async (req, res, next) => {
         title,
         description,
         price,
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        status: availability,
+        categoriesId: newCategoryByName.id
       }
     });
+
     if (req.files) {
       await prisma.itemImage.deleteMany({
         where: {
           itemId: +id
         }
       });
-      await req.files.map(async (item, index) => {
-        try {
-          const a = await cloundinary.uploader.upload(item.path);
-          await prisma.itemImage.create({
-            data: {
-              position: index + 1,
-              imageUrl: a.secure_url,
-              itemId: +id
-            }
-          });
-        } catch (error) {
-          console.log(error);
-        }
-      });
+      await Promise.all(
+        req.files.map(async (item, index) => {
+          try {
+            const a = await cloundinary.uploader.upload(item.path);
+            await prisma.itemImage.create({
+              data: {
+                position: index + 1,
+                imageUrl: a.secure_url,
+                itemId: +id
+              }
+            });
+          } catch (error) {
+            console.error('there is an error: ', error);
+            console.log(error);
+          }
+        })
+      );
     }
 
     res.status(200).json({ msg: `done` });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateItemStatus = async (req, res, next) => {
+  const { productId } = req.body;
+
+  try {
+    const updatedItem = await prisma.item.update({
+      where: {
+        id: +productId
+      },
+      data: {
+        status: 'available'
+      }
+    });
+    console.log('updatedItem data: ', updatedItem);
+    const ownerId = updatedItem.ownerId;
+    res.status(200).json({ ownerId });
   } catch (error) {
     next(error);
   }
@@ -95,6 +133,9 @@ const getMyProduct = async (req, res, next) => {
     const data = await prisma.item.findMany({
       where: {
         ownerId: +userId
+      },
+      orderBy: {
+        createdAt: 'desc'
       },
       include: {
         images: {
@@ -253,4 +294,4 @@ const dashboard = async (req, res, next) => {
   }
 };
 
-module.exports = { postItem, updateItem, deleteItem, renewItem, updateUser, dashboard, getMyProduct };
+module.exports = { postItem, updateItem, deleteItem, renewItem, updateUser, dashboard, getMyProduct, updateItemStatus };

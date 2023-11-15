@@ -14,25 +14,6 @@ const getAllItem = async (req, res, next) => {
   }
 };
 
-// const getSingleItem = async (req, res, next) => {
-//   try {
-//     const id = req.body.id;
-//     // we want to join the owner user data
-//     const data = await prisma.item.findUnique({
-//       where: { id: +id }
-//     });
-
-//     const user = await prisma.user.findUnique({
-//       where: { id: data.ownerId }
-//     });
-
-//     data.user = user.firstName + ' ' + user.lastName.slice(0, 1);
-//     res.status(200).json(data);
-//   } catch (error) {
-//     next(error);
-//   }
-// };
-
 const getSingleItem = async (req, res, next) => {
   try {
     // const id = +req.body.id; // Assuming the item ID is in the URL as a route parameter
@@ -83,6 +64,9 @@ const myRentalItem = async (req, res, next) => {
       where: {
         ownerId: req.user.id
       },
+      orderBy: {
+        createdAt: 'desc'
+      },
       include: {
         item: {
           select: {
@@ -114,6 +98,9 @@ const myRentedItem = async (req, res, next) => {
     const data = await prisma.rent.findMany({
       where: {
         renteeId: req.user.id
+      },
+      orderBy: {
+        createdAt: 'desc' // assuming 'createdAt' is the field name
       },
       include: {
         item: {
