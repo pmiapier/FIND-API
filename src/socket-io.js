@@ -8,10 +8,14 @@ module.exports = (io) => {
         if (authUser && authUser.firstName) {
             const userId = authUser.id;
             const firstName = authUser.firstName;
+            const lastName = authUser.lastName;
+            const fullName = authUser.firstName + " " + authUser.lastName;
             onlineUser[+userId] = {
                 socketId: socket.id,
                 userId: userId,
-                firstName: firstName
+                firstName: firstName,
+                lastName: lastName,
+                fullName: fullName
             };
             io.emit("onlineUser", onlineUser)
             // io.emit("onlineUser", Object.values(onlineUser))
