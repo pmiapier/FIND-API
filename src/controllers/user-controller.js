@@ -54,7 +54,6 @@ const postItem = async (req, res, next) => {
 const updateItem = async (req, res, next) => {
   try {
     const { title, categories: newCategories, description, price, id, position, availability } = req.body;
-
     // console.log('updateItem log:', req.body);
     const newCategoryByName = await prisma.categories.findFirst({
       where: {
@@ -86,6 +85,9 @@ const updateItem = async (req, res, next) => {
         req.files.map(async (item, index) => {
           try {
             const a = await cloundinary.uploader.upload(item.path);
+            fs.unlink(item.path, (err) => {
+              if (err) next(err);
+            });
             await prisma.itemImage.create({
               data: {
                 position: index + 1,
@@ -95,13 +97,20 @@ const updateItem = async (req, res, next) => {
             });
           } catch (error) {
             console.error('there is an error: ', error);
-            console.log(error);
           }
         })
       );
     }
+    
 
-    res.status(200).json({ msg: `done` });
+    const data = await prisma.item.findFirst({
+      where: { id: +id },
+      include: {
+        images: true,
+        categories: true
+      }
+    });
+    res.status(200).json(data);
   } catch (error) {
     next(error);
   }
@@ -119,7 +128,7 @@ const updateItemStatus = async (req, res, next) => {
         status: 'available'
       }
     });
-    console.log('updatedItem data: ', updatedItem);
+    // console.log('updatedItem data: ', updatedItem);
     const ownerId = updatedItem.ownerId;
     res.status(200).json({ ownerId });
   } catch (error) {
@@ -151,6 +160,7 @@ const getMyProduct = async (req, res, next) => {
         }
       }
     });
+    // console.log(data);
     res.status(200).json(data);
   } catch (error) {
     next(error);
