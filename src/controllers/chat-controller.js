@@ -20,7 +20,7 @@ const chatRooms = async (req, res) => {
                 userB: true,
             }
         });
-        console.log(chatRooms);
+        // console.log(chatRooms);
         res.json(chatRooms);
     } catch (error) {
         console.log(error);
