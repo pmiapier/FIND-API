@@ -35,10 +35,9 @@ module.exports = (io) => {
         //####### join room #######
         socket.on(`join_room`, async data => {
             console.log(data, "+++++++++ data ++++++++++");
-            const senderId = parseInt(data.sender);  // Parse sender ID to integer
+            const senderId = data.sender;
             console.log(senderId, "sender")
-            const receiverId = parseInt(data.receiver);  // Parse receiver ID to integer
-            // console.log(data.receiver, "dataBBBB")
+            const receiverId = data.receiver;
             console.log(receiverId, "receiver")
             const sortedUserIds = [senderId, receiverId].sort();
             const sender = await prisma.user.findFirst({ where: { id: senderId } })
@@ -46,11 +45,12 @@ module.exports = (io) => {
             let room = await prisma.chatroom.findFirst({
                 where: {
                     OR: [
-                        { userA_id: senderId }, { userB_id: receiverId },
-                        { userA_id: receiverId }, { userB_id: senderId }
+                        { AND: { userA_id: sender.id, userB_id: receiver.id } },
+                        { AND: { userA_id: receiver.id, userB_id: sender.id } }
                     ]
                 }
             })
+            console.log("R", room)
             if (!room) {
                 room = await prisma.chatroom.create({
                     data: {
@@ -67,7 +67,7 @@ module.exports = (io) => {
                     sender: true
                 }
             })
-
+            console.log("room :", room.id)
             socket.join(room.id)
             io.to(room.id).emit(`room_id`, { id: room.id })
             io.to(room.id).emit(`all_chat`, { allChat })
@@ -86,11 +86,9 @@ module.exports = (io) => {
                     type
                 }
             })
-            console.log(onlineUser)
-            console.log(data.to)
-            console.log("send_message from :", socket.id, "to:", onlineUser[+data.to]);
+            console.log("send_message from :", authUser.id, "to:", onlineUser[+data.to].userId);
             io.to(onlineUser[data.to]?.socketId).emit(`receive_message`, data)
-            // io.to(onlineUser[+data.to]?.socketId).emit(`receive_message`, data)
+
         })
     })
 }
