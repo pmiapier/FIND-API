@@ -1,7 +1,7 @@
 const prisma = require(`../models/prisma`);
 
 const getAllItem = async (req, res, next) => {
-  console.log(`ok`);
+  // console.log(`ok`);
   try {
     const data = await prisma.item.findMany({
       include: {
