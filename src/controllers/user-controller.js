@@ -149,42 +149,95 @@ const renewItem = async (req, res, next) => {
   }
 };
 
-const updateUser = async (req, res, next) => {
+// const updateUser = async (req, res, next) => {
+//   try {
+//     const { value, error } = updateUserSchema.validate(req.body);
+//     if (error) next(createError(`user validateError`, 400));
+//     const userPassword = await prisma.user.findFirst({
+//       where: { id: req.user.id },
+//       select: { password: true }
+//     });
+
+//     const compare = await bcrypt.compare(value.password, userPassword.password);
+//     if (compare) {
+//       if (req.file) {
+//         const img = await cloundinary.uploader.upload(req.file.path);
+//         await prisma.user.update({
+//           date: { profileImg: img.secure_url },
+//           where: { id: req.user.id }
+//         });
+//       }
+//       async function update(data) {
+//         await prisma.user.update({
+//           where: { id: req.user.id },
+//           data: { [data]: value[data] }
+//         });
+//       }
+//       if (value.firstName) update(`firstName`);
+//       if (value.lastName) update(`lastName`);
+//       if (value.email) update(`email`);
+//       if (value.phoneNumber) update(`phoneNumber`);
+//     }
+//     res.status(200).json({ x: 'done' });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
+// const updateUser = async (req, res, next) => {
+//   try {
+//     const { value, error } = updateUserSchema.validate(req.body);
+//     if (error) next(createError(`user validateError`, 400));
+
+//     if (req.file) {
+//       const img = await cloundinary.uploader.upload(req.file.path);
+//       await prisma.user.update({
+//         data: { profileImg: img.secure_url },
+//         where: { id: req.user.id }
+//       });
+//     }
+
+//     async function update(data) {
+//       await prisma.user.update({
+//         where: { id: req.user.id },
+//         data: { [data]: value[data] }
+//       });
+//     }
+
+//     if (value.firstName) update('firstName');
+//     if (value.lastName) update('lastName');
+//     if (value.email) update('email');
+//     if (value.phoneNumber) update('phoneNumber');
+
+//     res.status(200).json({ x: 'done' });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
+const edituser = async (req, res, next) => {
   try {
-    const { value, error } = updateUserSchema.validate(req.body);
-    if (error) next(createError(`user validateError`, 400));
-
-    const userPassword = await prisma.user.findFirst({
-      where: { id: req.user.id },
-      select: { password: true }
+    const value = req.body;
+    const editdata = await prisma.user.update({
+      where: {
+        id: +req.params.id
+      },
+      data: {
+        firstName: value.firstName,
+        lastName: value.lastName,
+        phoneNumber: value.phoneNumber,
+        email: value.email
+      }
     });
-
-    const compare = await bcrypt.compare(value.password, userPassword.password);
-    if (compare) {
-      if (req.file) {
-        const img = await cloundinary.uploader.upload(req.file.path);
-        await prisma.user.update({
-          date: { profileImg: img.secure_url },
-          where: { id: req.user.id }
-        });
-      }
-      async function update(data) {
-        await prisma.user.update({
-          where: { id: req.user.id },
-          data: { [data]: value[data] }
-        });
-      }
-      if (value.firstName) update(`firstName`);
-      if (value.lastName) update(`lastName`);
-      if (value.email) update(`email`);
-      if (value.phoneNumber) update(`phoneNumber`);
-    }
-
-    res.status(200).json({ x: 'done' });
+    res.status(201).json({ editdata });
   } catch (error) {
     next(error);
   }
 };
+
+
+
+
 const dashboard = async (req, res, next) => {
   try {
     const items = await prisma.item.findMany({
@@ -253,4 +306,4 @@ const dashboard = async (req, res, next) => {
   }
 };
 
-module.exports = { postItem, updateItem, deleteItem, renewItem, updateUser, dashboard, getMyProduct };
+module.exports = { postItem, updateItem, deleteItem, renewItem, edituser, dashboard, getMyProduct };
