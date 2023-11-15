@@ -61,7 +61,7 @@ const updateItem = async (req, res, next) => {
       }
     });
 
-    const update = await prisma.item.update({
+    await prisma.item.update({
       where: {
         id: +id
       },
@@ -85,6 +85,9 @@ const updateItem = async (req, res, next) => {
         req.files.map(async (item, index) => {
           try {
             const a = await cloundinary.uploader.upload(item.path);
+            fs.unlink(item.path, (err) => {
+              if (err) next(err);
+            });
             await prisma.itemImage.create({
               data: {
                 position: index + 1,
@@ -94,7 +97,6 @@ const updateItem = async (req, res, next) => {
             });
           } catch (error) {
             console.error('there is an error: ', error);
-            // console.log(error);
           }
         })
       );
