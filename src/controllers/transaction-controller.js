@@ -30,9 +30,7 @@ const createTransaction = async (req, res, next) => {
         
       }
     });
-    // console.log("🚀 ~ file: transaction-controller.js:28 ~ createTransaction ~ findStatus:", findStatus)
-    // console.log("🚀 ~ file: transaction-controller.js:28 ~ createTransaction ~ findStatus:", findStatus?.owner?.wallets)
-    // console.log("🚀 ~ file: transaction-controller.js:28 ~ createTransaction ~ findStatus:", findStatus?.rentee?.wallets)
+
 
 
     if (findStatus.owner_status === constantStatus.completed && findStatus.rentee_status === constantStatus.completed) {
@@ -93,10 +91,6 @@ const createTransaction = async (req, res, next) => {
                     amount: updateAmount,
                 }
             });
-            // console.log("-----------------------------------------------------")
-            // console.log("findUserIdByWallet",findUserIdByWallet)
-            // console.log("Point || Admin",findUserIdByWallet.user)
-            // console.log("isAdmin",findUserIdByWallet.user.isAdmin)
             
             
             if(findUserIdByWallet?.user.isAdmin == false){
@@ -109,19 +103,16 @@ const createTransaction = async (req, res, next) => {
                       point: updatePoint,
                   }
               });
-              // console.log("-----------------------------------------------------")
-              // console.log("🚀 ~ file: transaction-controller.js:109 ~ dataTransaction?.map ~ updatePointttt:", updatePointttt)
+ 
             }
       
           });
           
       res.status(200).json({createDataTransaction});
-      // res.status(200).json(createDataTransaction);
       
     }
 
   } catch (error) {
-    // next(createError("status is not completed ! ",400));
     console.log(error)
     next(error)
   }
@@ -179,9 +170,7 @@ const getTransaction = async(req,res,next) => {
 const getPending = async(req,res,next) => {
   try {
     const userId = req.user.id
-    console.log("🚀 ~ file: transaction-controller.js:113 ~ getTransaction ~ userId:", userId)
-
-    const amountStatusRentee = await prisma.rent.aggregate({
+    const findIdRentee = await prisma.rent.findMany({
       where: {
         AND: [{renteeId: userId},
         {
@@ -191,22 +180,31 @@ const getPending = async(req,res,next) => {
         }  
         ]
       },
-      _sum: {
-        // id: true,
-        // ownerId: true,
-        // renteeId: true,
-        // rentee_status: true,
-        // owner_status:true,
-        // amount: true,
+      select: {
+        id: true,
+        ownerId: true,
+        renteeId: true,
+        rentee_status: true,
+        owner_status:true,
+        amount: true,
         deposit: true,
-        // createdAt: true
+        createdAt: true
       },
     });
-    console.log("🚀 ~ file: transaction-controller.js:128 ~ getTransaction ~ amountStatusRentee:", amountStatusRentee)
-    // console.log("🚀 ~ file: transaction-controller.js:128 ~ getTransaction ~ amountStatusRentee:", amountStatusRentee.deposit)
-    console.log("--------------------------------------------------------------------------------------------------")
+ 
 
-    const amountStatusOwner = await prisma.rent.aggregate({
+    console.log("--------------------------------------------------------------------------------------------------")
+    const result = findIdRentee.map((data) => {
+      const renteeDeposit = data.deposit 
+      return renteeDeposit
+    })
+    const sumDeposit = result.reduce((acc, el) => {
+      return acc+ Number(el);
+    }, 0);
+  
+
+    // Owner
+    const findIdOwner = await prisma.rent.findMany({
       where: {
         AND: [{ownerId: userId},
         {
@@ -217,35 +215,33 @@ const getPending = async(req,res,next) => {
         }  
         ]
       },
-
-      // where: {
-      //   AND: [{renteeId: userId},
-      //   {
-      //     OR:[
-      //       {rentee_status:constantStatus.pending_received},{rentee_status:constantStatus.awaiting_payment}
-      //     ]
-      //   }  
-      //   ]
-      // },
-
-
-      _sum: {
-        // id: true,
-        // ownerId: true,
-        // renteeId: true,
-        // rentee_status:true,
-        // owner_status: true,
+      select: {
+        id: true,
+        ownerId: true,
+        renteeId: true,
+        rentee_status: true,
+        owner_status:true,
         amount: true,
-        // deposit: true,
-        // createdAt: true
-    
-      }
+        deposit: true,
+        createdAt: true
+      },
     });
-    console.log("🚀 ~ file: transaction-controller.js:147 ~ getTransaction ~ amountStatusOwner:", amountStatusOwner)
+
+    console.log("--------------------------------------------------------------------------------------------------")
+    const resultOwner = findIdOwner.map((data) => {
+      const renteeAmount = data.amount 
+      return renteeAmount
+    })
+    const sumAmount = resultOwner.reduce((acc, el) => {
+      return acc+ Number(el);
+    }, 0);
 
 
-    res.status(200).json({message:"get show order success",amountStatusRentee,amountStatusOwner})
-    // res.status(200).json({message:"get show order success"})
+    const sumOwnerAndRent = sumAmount + sumDeposit
+   
+
+
+    res.status(200).json({message:"get show order success",findIdRentee,findIdOwner,sumOwnerAndRent})
   } catch (error) {
     next(error)
   }
