@@ -86,7 +86,7 @@ module.exports = (io) => {
                     type
                 }
             })
-            console.log("send_message from :", authUser.id, "to:", onlineUser[+data.to].userId);
+            // console.log("send_message from :", authUser.id, "to:", onlineUser[+data.to].userId);
             io.to(onlineUser[data.to]?.socketId).emit(`receive_message`, data)
 
         })
