@@ -18,7 +18,7 @@ const getSingleItem = async (req, res, next) => {
   try {
     // const id = +req.body.id; // Assuming the item ID is in the URL as a route parameter
     const { id } = req.params;
-    console.log(req);
+    // console.log(req);
     const data = await prisma.item.findFirst({
       where: { id: +id },
       include: {
