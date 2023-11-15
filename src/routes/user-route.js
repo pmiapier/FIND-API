@@ -3,10 +3,10 @@ const {
   updateItem,
   deleteItem,
   renewItem,
-  updateUser,
+  edituser,
   dashboard,
   getMyProduct,
-  edituser,
+
   updateItemStatus
 } = require('../controllers/user-controller');
 const authenticate = require(`../middlewares/authenticate`);
