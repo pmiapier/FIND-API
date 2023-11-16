@@ -20,10 +20,10 @@ module.exports = (io) => {
             io.emit("onlineUser", onlineUser)
             // io.emit("onlineUser", Object.values(onlineUser))
             // console.log(`${socket.id} Connect`);
-            console.log(`onlineUser : `, Object.keys(onlineUser));
+            // console.log(`onlineUser : `, Object.keys(onlineUser));
         } else {
             // กรณีที่ authUser เป็นค่า null หรือไม่มี firstName
-            console.error('authUser is null or does not contain firstName');
+            // console.error('authUser is null or does not contain firstName');
         }
         //####### disconnect #######
         socket.on(`disconnect`, () => {
@@ -33,15 +33,15 @@ module.exports = (io) => {
                 io.emit("onlineUser", onlineUser);
             }
             // console.log(`${socket.id} Disconnect`);
-            console.log(`onlineuser : `, Object.keys(onlineUser));
+            // console.log(`onlineuser : `, Object.keys(onlineUser));
         })
         //####### join room #######
         socket.on(`join_room`, async data => {
-            console.log(data, "+++++++++ data ++++++++++");
+            // console.log(data, "+++++++++ data ++++++++++");
             const senderId = data.sender;
-            console.log(senderId, "sender")
+            // console.log(senderId, "sender")
             const receiverId = data.receiver;
-            console.log(receiverId, "receiver")
+            // console.log(receiverId, "receiver")
             const sortedUserIds = [senderId, receiverId].sort();
             const sender = await prisma.user.findFirst({ where: { id: senderId } })
             const receiver = await prisma.user.findFirst({ where: { id: receiverId } })
@@ -53,7 +53,7 @@ module.exports = (io) => {
                     ]
                 }
             })
-            console.log("R", room)
+            // console.log("R", room)
             if (!room) {
                 room = await prisma.chatroom.create({
                     data: {
@@ -70,7 +70,7 @@ module.exports = (io) => {
                     sender: true
                 }
             })
-            console.log("room :", room.id)
+            // console.log("room :", room.id)
             socket.join(room.id)
             io.to(room.id).emit(`room_id`, { id: room.id })
             io.to(room.id).emit(`all_chat`, { allChat })
