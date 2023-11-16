@@ -259,7 +259,6 @@ const myRentedItem = async (req, res, next) => {
 
 const productListing = async (req, res, next) => {
   try {
-
     const { page = 1, categories = null } = req.query;
     const userId = req.user?.id;
     let categoriesId = null;
@@ -271,7 +270,7 @@ const productListing = async (req, res, next) => {
       });
     }
     const a = categoriesId && { categoriesId: categoriesId.id };
-    const b = !req.user && { ownerId: { not: userId } };
+    const b = req.user && { ownerId: { not: userId } };
     const c = categoriesId && { id: categoriesId.id };
 
     const countPrisma = {
