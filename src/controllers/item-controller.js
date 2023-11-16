@@ -129,128 +129,180 @@ const myRentedItem = async (req, res, next) => {
   }
 };
 
+// const productListing = async (req, res, next) => {
+//   try {
+//     const query = req.query;
+//     if(query.page==null) query.page=1
+//     // if(query.categories=null) query.page
+//     if (req.user) {
+//       let page = query.page ? query.page : 1;
+//       let count;
+//       let idx = undefined;
+//       if (query?.categories) {
+//         idx = await prisma.categories.findFirst({
+//           where: {
+//             name: query?.categories
+//           }
+//         });
+//         count = await prisma.item.aggregate({
+//           _count: {
+//             id: true
+//           },
+//           where: {
+//             status: 'available',
+//             categoriesId: idx.id,
+//             ownerId: {
+//               not: req.user.id
+//             }
+//           }
+//         });
+//       } else {
+//         count = await prisma.item.aggregate({
+//           _count: {
+//             id: true
+//           },
+//           where: {
+//             status: 'available',
+//             ownerId: {
+//               not: req.user.id
+//             }
+//           }
+//         });
+//       }
+//       let where;
+//       if (query?.categories) {
+//         where = {
+//           categoriesId: idx.id,
+//           ownerId: {
+//             not: req.user.id
+//           }
+//         };
+//       } else {
+//         where = {
+//           ownerId: {
+//             not: req.user.id
+//           }
+//         };
+//       }
+//       const item = await prisma.item.findMany({
+//         include: {
+//           categories: true,
+//           images: {
+//             select: {
+//               imageUrl: true
+//             }
+//           }
+//         },
+//         where,
+//         take: 15,
+//         skip: (page - 1) * 15
+//       });
+//       res.status(200).json({ count, item });
+//     } else {
+
+//       let page = query.page ? query.page : 1;
+
+//       let count;
+//       if (query?.categories) {
+//         const idx = await prisma.categories.findFirst({
+//           where: {
+//             name: query?.categories
+//           }
+//         });
+
+//         count = await prisma.item.aggregate({
+//           _count: {
+//             id: true
+//           },
+//           where: {
+//             status: 'available',
+//             categoriesId: idx.id
+//           }
+//         });
+//       } else {
+//         count = await prisma.item.aggregate({
+//           _count: {
+//             id: true
+//           },
+//           where: {
+//             status: 'available'
+//           }
+//         });
+//       }
+
+//       const whereCondition = {};
+
+//       if (query?.categories) {
+//         whereCondition.categories = { name: query?.categories };
+//       }
+
+//       const item = await prisma.item.findMany({
+//         include: {
+//           categories: true,
+//           images: {
+//             select: {
+//               imageUrl: true
+//             }
+//           }
+//         },
+//         where: whereCondition,
+//         take: 15,
+//         skip: (page - 1) * 15
+//       });
+
+//       res.status(200).json({ count, item });
+//     }
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
 const productListing = async (req, res, next) => {
   try {
-    if (req.user) {
-      const query = req.query;
-      let page = query.page ? query.page : 1;
-      let count;
-      let idx = undefined;
-      if (query?.categories) {
-        idx = await prisma.categories.findFirst({
-          where: {
-            name: query?.categories
-          }
-        });
-        count = await prisma.item.aggregate({
-          _count: {
-            id: true
-          },
-          where: {
-            status: 'available',
-            categoriesId: idx.id,
-            ownerId: {
-              not: req.user.id
-            }
-          }
-        });
-      } else {
-        count = await prisma.item.aggregate({
-          _count: {
-            id: true
-          },
-          where: {
-            status: 'available',
-            ownerId: {
-              not: req.user.id
-            }
-          }
-        });
-      }
-      let where;
-      if (query?.categories) {
-        where = {
-          categoriesId: idx.id,
-          ownerId: {
-            not: req.user.id
-          }
-        };
-      } else {
-        where = {
-          ownerId: {
-            not: req.user.id
-          }
-        };
-      }
-      const item = await prisma.item.findMany({
-        include: {
-          categories: true,
-          images: {
-            select: {
-              imageUrl: true
-            }
-          }
-        },
-        where,
-        take: 15,
-        skip: (page - 1) * 15
+
+    const { page = 1, categories = null } = req.query;
+    const userId = req.user?.id;
+    let categoriesId = null;
+    if (categories) {
+      categoriesId = await prisma.categories.findFirst({
+        where: {
+          name: categories
+        }
       });
-      res.status(200).json({ count, item });
-    } else {
-      const query = req.query;
-
-      let page = query.page ? query.page : 1;
-
-      let count;
-      if (query?.categories) {
-        const idx = await prisma.categories.findFirst({
-          where: {
-            name: query?.categories
-          }
-        });
-
-        count = await prisma.item.aggregate({
-          _count: {
-            id: true
-          },
-          where: {
-            status: 'available',
-            categoriesId: idx.id
-          }
-        });
-      } else {
-        count = await prisma.item.aggregate({
-          _count: {
-            id: true
-          },
-          where: {
-            status: 'available'
-          }
-        });
-      }
-
-      const whereCondition = {};
-
-      if (query?.categories) {
-        whereCondition.categories = { name: query?.categories };
-      }
-
-      const item = await prisma.item.findMany({
-        include: {
-          categories: true,
-          images: {
-            select: {
-              imageUrl: true
-            }
-          }
-        },
-        where: whereCondition,
-        take: 15,
-        skip: (page - 1) * 15
-      });
-
-      res.status(200).json({ count, item });
     }
+    const a = categoriesId && { categoriesId: categoriesId.id };
+    const b = !req.user && { ownerId: { not: userId } };
+    const c = categoriesId && { id: categoriesId.id };
+
+    const countPrisma = {
+      status: 'available',
+      ...a,
+      ...b
+    };
+
+    const count = await prisma.item.aggregate({
+      _count: {
+        id: true
+      },
+      where: countPrisma
+    });
+
+    const itemPrisma = { ...a, ...b };
+    const item = await prisma.item.findMany({
+      include: {
+        categories: true,
+        images: {
+          select: {
+            imageUrl: true
+          }
+        }
+      },
+      where: itemPrisma,
+      take: 15,
+      skip: (page - 1) * 15
+    });
+
+    res.status(200).json({ item, count });
   } catch (error) {
     next(error);
   }
