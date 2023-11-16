@@ -20,8 +20,7 @@ module.exports = (io) => {
             io.emit("onlineUser", onlineUser)
             // io.emit("onlineUser", Object.values(onlineUser))
             // console.log(`${socket.id} Connect`);
-            console.log(`onlineUser : `, onlineUser);
-            // console.log(onlineUser);
+            console.log(`onlineUser : `, Object.keys(onlineUser));
         } else {
             // กรณีที่ authUser เป็นค่า null หรือไม่มี firstName
             console.error('authUser is null or does not contain firstName');
@@ -33,8 +32,8 @@ module.exports = (io) => {
                 delete onlineUser[authUser.id]
                 io.emit("onlineUser", onlineUser);
             }
-            console.log(`${socket.id} Disconnect`);
-            console.log(`onlineuser : `, onlineUser);
+            // console.log(`${socket.id} Disconnect`);
+            console.log(`onlineuser : `, Object.keys(onlineUser));
         })
         //####### join room #######
         socket.on(`join_room`, async data => {
