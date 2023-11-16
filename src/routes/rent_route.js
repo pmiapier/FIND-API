@@ -1,9 +1,11 @@
 const { verifyPayment, changeOwnerStatus, changeRenteeStatus } = require("../controllers/rent-controller")
 const authenticate = require("../middlewares/authenticate")
+const {orderTemplate} = require('../middlewares/emailNotificationTemplate')
+
 
 const router = require(`express`).Router()
 
-router.post('/verifyPayment', authenticate, verifyPayment)
+router.post('/verifyPayment', authenticate, verifyPayment,orderTemplate)
 router.post('/changeOwnerStatus', authenticate, changeOwnerStatus)
 router.post('/changeRenteeStatus', authenticate, changeRenteeStatus)
 

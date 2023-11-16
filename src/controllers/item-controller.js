@@ -131,59 +131,126 @@ const myRentedItem = async (req, res, next) => {
 
 const productListing = async (req, res, next) => {
   try {
-    const query = req.query;
-
-    let page = query.page ? query.page : 1;
-
-    let count;
-    if (query?.categories) {
-      const idx = await prisma.categories.findFirst({
-        where: {
-          name: query?.categories
-        }
-      });
-
-      count = await prisma.item.aggregate({
-        _count: {
-          id: true
-        },
-        where: {
-          status: 'available',
-          categoriesId: idx.id
-        }
-      });
-    } else {
-      count = await prisma.item.aggregate({
-        _count: {
-          id: true
-        },
-        where: {
-          status: 'available'
-        }
-      });
-    }
-
-    const whereCondition = {};
-
-    if (query?.categories) {
-      whereCondition.categories = { name: query?.categories };
-    }
-
-    const item = await prisma.item.findMany({
-      include: {
-        categories: true,
-        images: {
-          select: {
-            imageUrl: true
+    if (req.user) {
+      const query = req.query;
+      let page = query.page ? query.page : 1;
+      let count;
+      let idx = undefined;
+      if (query?.categories) {
+        idx = await prisma.categories.findFirst({
+          where: {
+            name: query?.categories
           }
-        }
-      },
-      where: whereCondition,
-      take: 15,
-      skip: (page - 1) * 15
-    });
+        });
+        count = await prisma.item.aggregate({
+          _count: {
+            id: true
+          },
+          where: {
+            status: 'available',
+            categoriesId: idx.id,
+            ownerId: {
+              not: req.user.id
+            }
+          }
+        });
+      } else {
+        count = await prisma.item.aggregate({
+          _count: {
+            id: true
+          },
+          where: {
+            status: 'available',
+            ownerId: {
+              not: req.user.id
+            }
+          }
+        });
+      }
+      let where;
+      if (query?.categories) {
+        where = {
+          categoriesId: idx.id,
+          ownerId: {
+            not: req.user.id
+          }
+        };
+      } else {
+        where = {
+          ownerId: {
+            not: req.user.id
+          }
+        };
+      }
+      const item = await prisma.item.findMany({
+        include: {
+          categories: true,
+          images: {
+            select: {
+              imageUrl: true
+            }
+          }
+        },
+        where,
+        take: 15,
+        skip: (page - 1) * 15
+      });
+      res.status(200).json({ count, item });
+    } else {
+      const query = req.query;
 
-    res.status(200).json({ count, item });
+      let page = query.page ? query.page : 1;
+
+      let count;
+      if (query?.categories) {
+        const idx = await prisma.categories.findFirst({
+          where: {
+            name: query?.categories
+          }
+        });
+
+        count = await prisma.item.aggregate({
+          _count: {
+            id: true
+          },
+          where: {
+            status: 'available',
+            categoriesId: idx.id
+          }
+        });
+      } else {
+        count = await prisma.item.aggregate({
+          _count: {
+            id: true
+          },
+          where: {
+            status: 'available'
+          }
+        });
+      }
+
+      const whereCondition = {};
+
+      if (query?.categories) {
+        whereCondition.categories = { name: query?.categories };
+      }
+
+      const item = await prisma.item.findMany({
+        include: {
+          categories: true,
+          images: {
+            select: {
+              imageUrl: true
+            }
+          }
+        },
+        where: whereCondition,
+        take: 15,
+        skip: (page - 1) * 15
+      });
+
+      res.status(200).json({ count, item });
+    }
   } catch (error) {
     next(error);
   }

@@ -3,9 +3,10 @@ const {
   updateItem,
   deleteItem,
   renewItem,
-  updateUser,
+  edituser,
   dashboard,
   getMyProduct,
+
   updateItemStatus
 } = require('../controllers/user-controller');
 const authenticate = require(`../middlewares/authenticate`);
@@ -19,7 +20,7 @@ router.patch(`/updateItemStatus`, authenticate, updateItemStatus);
 router.delete(`/deleteItem`, authenticate, deleteItem);
 router.patch(`/renew`, authenticate, renewItem);
 router.get('/my-product', authenticate, getMyProduct);
-router.patch(`/updateUser`, authenticate, upload.single(`file`), updateUser);
+router.patch(`/updateUser/:id`, authenticate, edituser);
 router.get(`/dashboard`, authenticate, dashboard);
 
 module.exports = router;
