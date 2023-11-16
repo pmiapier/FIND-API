@@ -32,6 +32,7 @@ const verifyPayment = async (req, res, next) => {
                     rentee_status: "pending_received",
                 }
             })
+            next()
          } catch (error) {
             next(error)
          }

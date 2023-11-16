@@ -36,6 +36,7 @@ app.use(morgan('dev'));
 app.use(cors());
 app.use(rateLimitMiddleware);
 app.use(express.json());
+app.set(`view engine`, `pug`);
 
 //# TEE
 app.get('/', (req, res) => res.send('Welcome to FIND'));
