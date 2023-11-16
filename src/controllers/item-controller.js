@@ -1,7 +1,7 @@
 const prisma = require(`../models/prisma`);
 
 const getAllItem = async (req, res, next) => {
-  console.log(`ok`);
+  // console.log(`ok`);
   try {
     const data = await prisma.item.findMany({
       include: {
@@ -18,7 +18,7 @@ const getSingleItem = async (req, res, next) => {
   try {
     // const id = +req.body.id; // Assuming the item ID is in the URL as a route parameter
     const { id } = req.params;
-    console.log(req);
+    // console.log(req);
     const data = await prisma.item.findFirst({
       where: { id: +id },
       include: {
