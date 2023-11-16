@@ -7,6 +7,7 @@ const {
   productListing
 } = require('../controllers/item-controller');
 const authenticate = require('../middlewares/authenticate');
+const authenticateCheckUser = require(`../middlewares/authenticateCheckUser`);
 
 const router = require(`express`).Router();
 
@@ -23,6 +24,6 @@ router.get(`/getCategories`, getCategories);
 
 router.get(`/myRentalItem`, authenticate, myRentalItem);
 router.get(`/myRentedItem`, authenticate, myRentedItem);
-router.get(`/productListing`, productListing);
+router.get(`/productListing`, authenticateCheckUser, productListing);
 
 module.exports = router;
