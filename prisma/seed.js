@@ -167,7 +167,7 @@ async function main() {
             status: randomRentStatus,
             amount: rentAmount,
             deposit: depositAmount,
-            stripeSession: randomStripeSession,
+            stripeSession: randomStripeSession
           }
         });
 
