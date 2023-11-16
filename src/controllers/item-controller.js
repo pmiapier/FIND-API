@@ -35,7 +35,7 @@ const getSingleItem = async (req, res, next) => {
       where: { id: data.ownerId }
     });
 
-    data.user = user.firstName + ' ' + user.lastName.slice(0, 1);
+    data.user = user.firstName + ' ' + user.lastName;
     res.status(200).json(data);
   } catch (error) {
     res.status(404).json({ message: 'nothing here ..' });
