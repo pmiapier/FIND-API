@@ -34,12 +34,12 @@ const register = async (req, res, next) => {
       }
     });
     console.log('🚀 ~ file: auth-controller.js:31 ~ register ~ createWallet:', createWallet);
-
     delete user.password;
     const payload = { userId: user.id };
     const TOKEN = jwt.sign(payload, JWT_SECRET_KEY, { expiresIn: EXP_KEY });
+    req.user = user;
     res.status(200).json({ message: `done`, TOKEN, user });
-    next()
+    next();
   } catch (error) {
     next(error);
   }

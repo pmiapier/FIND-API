@@ -7,6 +7,7 @@ const prisma = require(`../models/prisma`);
 const registerTemplate = async (req, res, next) => {
   try {
     const user = req.user;
+    console.log(user.email);
 
     res.render(
       `./register`,
@@ -20,8 +21,8 @@ const registerTemplate = async (req, res, next) => {
 
         const resend = new Resend(RESEND_TOKEN);
         await resend.emails.send({
-          to: ['supawit.chukiat@gmail.com'],
-          // "to": [`${user.email}`],
+          // to: ['supawit.chukiat@gmail.com'],
+          to: [user.email],
           from: 'onboarding@resend.dev',
           html: html,
           text: `This is TEXT`,
@@ -119,7 +120,7 @@ const withdrawTemplate = async (req, res, next) => {
       {
         name: `${data.user.firstName} ${data.user.lastName}`,
         amount: data.amount,
-        date: moment(data.updatedAt).format('MMMM Do yyyy, h:mm:ss a'),
+        date: moment(data.updatedAt).format('MMMM Do yyyy, h:mm:ss a')
       },
       async (err, html) => {
         if (err) {
